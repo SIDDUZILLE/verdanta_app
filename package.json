@@ -1,0 +1,22 @@
+{
+  "name": "verdanta-world",
+  "version": "1.0.0",
+  "description": "Verdanta World - Artisanal Indian Home Décor & Corporate Gifting E-Commerce Platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "python serve.py",
+    "dev": "python serve.py",
+    "build": "node build.js",
+    "test": "node build.js"
+  },
+  "keywords": [
+    "verdanta",
+    "ecommerce",
+    "artisan",
+    "home-decor",
+    "corporate-gifting",
+    "indian-crafts"
+  ],
+  "author": "Verdanta World",
+  "license": "ISC"
+}

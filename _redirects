@@ -1,0 +1,2 @@
+# Netlify and Cloudflare Pages redirects
+/admin    /admin.html    200
