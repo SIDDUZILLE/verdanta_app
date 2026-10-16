@@ -56,19 +56,29 @@ export default function ProductGrid() {
   const activeCategoryObj = categories.find(c => c.id === activeCategory);
 
   return (
-    <section className="product-catalog-section">
+    <section className="collections-section" id="categories" style={{ paddingTop: '20px' }}>
       <div className="container">
-        {/* Results Bar */}
-        <div className="catalog-status-header">
-          <div className="status-title-group">
-            <h3 className="catalog-active-heading">
+        {/* Header matching original luxury layout */}
+        <div className="products-header">
+          <div>
+            <span className="section-eyebrow" style={{ marginBottom: '4px', display: 'block' }}>
+              EXPLORE OUR DISCIPLINES
+            </span>
+            <h2
+              className="products-section-title"
+              style={{
+                margin: '0 0 6px 0',
+                fontFamily: 'var(--font-serif)',
+                fontSize: '2.1rem',
+                color: 'var(--color-primary)'
+              }}
+            >
               {activeCategory === 'all'
-                ? 'All Artisan Masterpieces'
-                : activeCategoryObj?.name || 'Curated Creations'}
-              {activeSubCategory ? ` • ${activeSubCategory}` : ''}
-            </h3>
-            <span className="catalog-count-pill">
-              Showing {filteredProducts.length} Heirloom{filteredProducts.length === 1 ? '' : 's'}
+                ? 'FEATURED ARTISAN CREATIONS'
+                : activeCategoryObj?.name?.toUpperCase() || 'CURATED CREATIONS'}
+            </h2>
+            <span className="product-count-label" id="productsCountText">
+              Showing {filteredProducts.length} creations {activeSubCategory ? `in ${activeSubCategory}` : ''}
             </span>
           </div>
 
@@ -81,20 +91,20 @@ export default function ProductGrid() {
                 filterByCategory('all');
               }}
             >
-              <i className="fa-solid fa-rotate-left"></i> Reset Filters
+              <i className="fa-solid fa-rotate-left"></i> Reset Filter
             </button>
           )}
         </div>
 
         {/* Empty State */}
         {filteredProducts.length === 0 ? (
-          <div className="catalog-empty-state">
-            <div className="empty-icon-wrap">
+          <div className="catalog-empty-state" style={{ padding: '60px 20px', textAlign: 'center' }}>
+            <div className="empty-icon-wrap" style={{ fontSize: '2.5rem', color: 'var(--color-gold)', marginBottom: '16px' }}>
               <i className="fa-solid fa-magnifying-glass"></i>
             </div>
-            <h4>No creations found</h4>
-            <p>
-              We couldn't find any crafts matching your current search or category filter. Try clearing your search query or selecting another craft collection.
+            <h4 style={{ fontSize: '1.3rem', color: 'var(--color-primary)', marginBottom: '8px' }}>No creations found</h4>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: '20px' }}>
+              We couldn't find any crafts matching your current query. Try clearing filters or exploring all collections.
             </p>
             <button
               type="button"
@@ -108,8 +118,8 @@ export default function ProductGrid() {
             </button>
           </div>
         ) : (
-          /* Products Grid */
-          <div className="product-grid" id="productGrid">
+          /* Responsive Product Cards Grid */
+          <div className="product-cards-grid" id="productGrid">
             {filteredProducts.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}

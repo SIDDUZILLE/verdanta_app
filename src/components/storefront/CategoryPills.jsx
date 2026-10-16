@@ -16,75 +16,34 @@ export default function CategoryPills() {
   } = useStore();
 
   const shopCategories = categories.filter(c => c.channel === 'shop');
-
-  // Find currently active category object
   const currentCatObj = categories.find(c => c.id === activeCategory);
 
   return (
-    <section className="catalog-controls-section" id="categories">
+    <section className="collections-section" id="collections" style={{ paddingBottom: '0' }}>
       <div className="container">
         {/* Section Header */}
-        <div className="section-header-centered">
-          <span className="section-eyebrow">CURATED HERITAGE TAXONOMY</span>
-          <h2 className="section-title">Explore Indian Craft Collections</h2>
-          <p className="section-desc">
-            Handmade earthen pottery, sculpted brass urlis, carved teakwood heirlooms, and corporate eco-gifting creations.
+        <div className="section-header" style={{ textAlign: 'center', marginBottom: '36px' }}>
+          <span className="section-eyebrow" style={{ color: 'var(--color-gold)', letterSpacing: '2px' }}>
+            CURATED INDIAN DISCIPLINES
+          </span>
+          <h2
+            className="section-title"
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '2.4rem',
+              color: 'var(--color-primary)',
+              margin: '6px 0 12px 0'
+            }}
+          >
+            Shop By Craft Discipline
+          </h2>
+          <p style={{ maxWidth: '640px', margin: '0 auto', color: 'var(--color-text-muted)' }}>
+            Handcrafted terracotta pottery, sculpted teakwood heirlooms, brass urlis, and bespoke artisan gifting sets.
           </p>
         </div>
 
-        {/* Channel Switcher */}
-        <div className="channel-filter-tabs">
-          <button
-            type="button"
-            className={`channel-tab-btn ${activeChannel === 'all' ? 'active' : ''}`}
-            onClick={() => filterByChannel('all')}
-          >
-            All Portfolios
-          </button>
-          <button
-            type="button"
-            className={`channel-tab-btn ${activeChannel === 'shop' ? 'active' : ''}`}
-            onClick={() => filterByChannel('shop')}
-          >
-            <i className="fa-solid fa-shop"></i> Retail Collections
-          </button>
-          <button
-            type="button"
-            className={`channel-tab-btn ${activeChannel === 'corporate' ? 'active' : ''}`}
-            onClick={() => {
-              filterByChannel('corporate');
-              const el = document.getElementById('corporate');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            <i className="fa-solid fa-briefcase"></i> Corporate Gifting
-          </button>
-          <button
-            type="button"
-            className={`channel-tab-btn ${activeChannel === 'wholesale' ? 'active' : ''}`}
-            onClick={() => {
-              filterByChannel('wholesale');
-              const el = document.getElementById('wholesale');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            <i className="fa-solid fa-boxes-stacked"></i> Wholesale
-          </button>
-          <button
-            type="button"
-            className={`channel-tab-btn ${activeChannel === 'export' ? 'active' : ''}`}
-            onClick={() => {
-              filterByChannel('export');
-              const el = document.getElementById('export');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            <i className="fa-solid fa-earth-americas"></i> Global Export
-          </button>
-        </div>
-
-        {/* 4 Featured Category Showcase Cards */}
-        <div className="category-showcase-grid">
+        {/* 4 Main Visual Category Cards Grid */}
+        <div className="category-cards-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
           {shopCategories.map((cat, idx) => {
             const count = products.filter(p => p.categoryId === cat.id || p.category === cat.name).length;
             const isSelected = activeCategory === cat.id;
@@ -92,23 +51,50 @@ export default function CategoryPills() {
             return (
               <div
                 key={cat.id}
-                className={`category-showcase-card ${isSelected ? 'active-category' : ''}`}
+                className="category-card"
+                style={{
+                  cursor: 'pointer',
+                  borderColor: isSelected ? 'var(--color-gold)' : undefined,
+                  boxShadow: isSelected ? 'var(--shadow-md)' : undefined
+                }}
                 onClick={() => filterByCategory(cat.id)}
               >
-                <div
-                  className="cat-card-bg"
-                  style={{ backgroundImage: `url("${cat.image || 'images/wooden-gallery.jpg'}")` }}
-                >
-                  <div className="cat-card-gradient"></div>
+                <div className="category-card-image-wrap" style={{ height: '220px' }}>
+                  <img
+                    src={cat.image || 'images/wooden-gallery.jpg'}
+                    alt={cat.name}
+                    className="category-card-img"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = 'images/wooden-gallery.jpg';
+                    }}
+                  />
+                  <span className="category-tag-badge">
+                    {cat.badge || `Collection 0${idx + 1}`}
+                  </span>
                 </div>
-                <div className="cat-card-content">
-                  <span className="cat-card-badge">{cat.badge || `Collection 0${idx + 1}`}</span>
-                  <h3 className="cat-card-title">{cat.name}</h3>
-                  <p className="cat-card-desc">{cat.description}</p>
-                  <div className="cat-card-footer">
-                    <span className="cat-card-count">{count} Creations</span>
-                    <span className="cat-card-action">
-                      View Collection <i className="fa-solid fa-arrow-right"></i>
+
+                <div className="category-card-content" style={{ padding: '18px' }}>
+                  <h3 className="category-card-title" style={{ fontSize: '1.25rem', marginBottom: '6px' }}>
+                    {cat.name}
+                  </h3>
+
+                  {cat.subCategories && (
+                    <ul className="subcategories-tag-list" style={{ marginBottom: '8px' }}>
+                      {cat.subCategories.slice(0, 3).map((sub, sIdx) => (
+                        <li key={sIdx} style={{ fontSize: '0.72rem' }}>• {sub}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <p className="category-card-snippet" style={{ fontSize: '0.82rem', marginBottom: '14px' }}>
+                    {cat.description}
+                  </p>
+
+                  <div className="category-card-btn" style={{ justifyContent: 'space-between', width: '100%' }}>
+                    <span>{count} CREATIONS</span>
+                    <span>
+                      VIEW <i className="fa-solid fa-arrow-right"></i>
                     </span>
                   </div>
                 </div>
@@ -117,53 +103,80 @@ export default function CategoryPills() {
           })}
         </div>
 
-        {/* Live Catalog Search & Sub-Category Filter Bar */}
-        <div className="catalog-filter-bar">
-          <div className="catalog-search-wrap">
-            <i className="fa-solid fa-magnifying-glass search-bar-icon"></i>
-            <input
-              type="text"
-              className="catalog-search-input"
-              id="catalogSearchInput"
-              placeholder="Search by craft, terracotta, wooden clock, lamp, brass urli..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className="clear-search-btn"
-                onClick={() => setSearchQuery('')}
-                title="Clear Search"
-              >
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            )}
-          </div>
-
-          {/* Sub-Category Pills */}
-          {currentCatObj && currentCatObj.subCategories && currentCatObj.subCategories.length > 0 && (
-            <div className="sub-category-pills">
-              <button
-                type="button"
-                className={`sub-cat-pill ${activeSubCategory === null ? 'active' : ''}`}
-                onClick={() => setActiveSubCategory(null)}
-              >
-                All {currentCatObj.name}
-              </button>
-              {currentCatObj.subCategories.map((sub, sIdx) => (
-                <button
-                  key={sIdx}
-                  type="button"
-                  className={`sub-cat-pill ${activeSubCategory === sub ? 'active' : ''}`}
-                  onClick={() => setActiveSubCategory(sub === activeSubCategory ? null : sub)}
-                >
-                  {sub}
-                </button>
-              ))}
-            </div>
+        {/* Catalog Search & Sub-category Filter Bar */}
+        <div
+          className="catalog-search-inline"
+          style={{
+            maxWidth: '680px',
+            margin: '0 auto 28px auto',
+            display: 'flex',
+            alignItems: 'center',
+            background: '#ffffff',
+            border: '1px solid var(--color-border)',
+            borderRadius: '30px',
+            padding: '6px 16px',
+            boxShadow: 'var(--shadow-sm)'
+          }}
+        >
+          <i className="fa-solid fa-magnifying-glass" style={{ color: 'var(--color-gold)', marginRight: '10px' }}></i>
+          <input
+            type="text"
+            placeholder="Search creations by name, craft, or category..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1,
+              border: 'none',
+              outline: 'none',
+              padding: '8px 0',
+              fontSize: '0.9rem',
+              fontFamily: 'inherit'
+            }}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{ color: '#888', padding: '0 8px' }}
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
           )}
         </div>
+
+        {/* Sub-Category Pills for Active Category */}
+        {currentCatObj?.subCategories?.length > 0 && (
+          <div
+            className="subcategories-jump-bar"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              justifyContent: 'center',
+              marginBottom: '28px'
+            }}
+          >
+            <button
+              type="button"
+              className={`btn btn-sm ${activeSubCategory === null ? 'btn-primary' : 'btn-outline'}`}
+              style={{ borderRadius: '20px', fontSize: '0.78rem', padding: '6px 14px' }}
+              onClick={() => setActiveSubCategory(null)}
+            >
+              All {currentCatObj.name}
+            </button>
+            {currentCatObj.subCategories.map((sub, sIdx) => (
+              <button
+                key={sIdx}
+                type="button"
+                className={`btn btn-sm ${activeSubCategory === sub ? 'btn-primary' : 'btn-outline'}`}
+                style={{ borderRadius: '20px', fontSize: '0.78rem', padding: '6px 14px' }}
+                onClick={() => setActiveSubCategory(sub === activeSubCategory ? null : sub)}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

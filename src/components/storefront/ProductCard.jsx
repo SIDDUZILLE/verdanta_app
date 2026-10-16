@@ -22,118 +22,148 @@ export default function ProductCard({ product }) {
   const discountPct = mrp > sellingPrice && mrp > 0 ? Math.round(((mrp - sellingPrice) / mrp) * 100) : 0;
   const isWishlisted = wishlist.includes(product.id);
 
+  const isCorporate = (product.categoryId === 'corporate-gifting' || (product.category && product.category.toLowerCase().includes('corporate')));
+
   const handleProposalInquiry = (e) => {
     e.stopPropagation();
     const notes = `Product Inquiry: ${product.title || product.name} (${product.subItem || product.category})\nOffer Price: ₹${sellingPrice.toLocaleString('en-IN')}\nPlease share enterprise bulk quote, branding customization, and lead times.`;
     openProposalModal(product.title || product.name, notes);
   };
 
-  const isB2B = product.channel === 'corporate' || product.channel === 'wholesale' || product.channel === 'export';
-
   return (
-    <div className="product-card" onClick={() => setQuickViewProduct(product)}>
-      {/* Product Image Wrap */}
-      <div className="product-card-img-wrap">
+    <article
+      className={`product-card ${product.outOfStock ? 'is-out-of-stock' : ''}`}
+      id={`card-${product.id}`}
+      onClick={() => setQuickViewProduct(product)}
+    >
+      <div className="product-img-box">
         <img
           src={product.image || 'images/wooden-gallery.jpg'}
           alt={product.title || product.name}
+          className="product-img"
           loading="lazy"
-          className="product-card-img"
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = 'images/wooden-gallery.jpg';
           }}
         />
 
-        {/* Top Badges */}
-        <div className="product-card-top-badges">
-          {discountPct > 0 && (
-            <span className="card-badge discount-badge">
-              <i className="fa-solid fa-arrow-down"></i> {discountPct}% OFF
-            </span>
-          )}
-          {product.badge && <span className="card-badge custom-badge">{product.badge}</span>}
-        </div>
+        <span className="product-badge">{product.badge || 'Artisan Creation'}</span>
 
-        {/* Wishlist Button */}
-        <button
-          type="button"
-          className={`card-wishlist-btn ${isWishlisted ? 'active' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleWishlist(product.id);
-          }}
-          title={isWishlisted ? 'Remove from Wishlist' : 'Save to Wishlist'}
-          aria-label="Wishlist"
-        >
-          <i className={isWishlisted ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}></i>
-        </button>
+        {product.outOfStock ? (
+          <span
+            className="product-badge product-out-of-stock-badge"
+            style={{ background: '#dc3545', color: '#fff', fontWeight: 700 }}
+          >
+            <i className="fa-solid fa-ban"></i> OUT OF STOCK
+          </span>
+        ) : null}
 
-        {/* Hover Quick Action Overlay */}
-        <div className="product-card-overlay">
+        {discountPct > 0 && (
+          <span className="product-discount-ribbon">
+            <i className="fa-solid fa-arrow-down"></i>{discountPct}% OFF
+          </span>
+        )}
+
+        <div className="product-quick-actions">
           <button
             type="button"
-            className="card-quick-view-btn"
+            className="quick-action-btn"
             onClick={(e) => {
               e.stopPropagation();
               setQuickViewProduct(product);
             }}
           >
-            <i className="fa-solid fa-eye"></i> Quick View
+            <i className="fa-regular fa-eye"></i> QUICK VIEW
           </button>
-        </div>
-      </div>
 
-      {/* Product Info Body */}
-      <div className="product-card-body">
-        <div className="product-card-meta">
-          <span className="product-category-tag">{product.subItem || product.category}</span>
-          {product.origin && <span className="product-origin-tag"><i className="fa-solid fa-location-dot"></i> {product.origin}</span>}
-        </div>
-
-        <h4 className="product-card-title">{product.title || product.name}</h4>
-
-        {/* Pricing Row */}
-        <div className="product-card-price-row">
-          <span className="product-selling-price">{formatPrice(sellingPrice)}</span>
-          {mrp > sellingPrice && (
-            <span className="product-mrp-price">₹{mrp.toLocaleString('en-IN')}</span>
-          )}
-        </div>
-
-        {/* Card Actions */}
-        <div className="product-card-actions">
-          {isB2B ? (
+          {isCorporate ? (
             <button
               type="button"
-              className="btn btn-primary card-action-btn"
+              className="quick-action-btn"
               onClick={handleProposalInquiry}
             >
-              <i className="fa-solid fa-paper-plane"></i> Request Bulk Quote
+              <i className="fa-solid fa-file-signature"></i> ENQUIRE
+            </button>
+          ) : product.outOfStock ? (
+            <button
+              type="button"
+              className="quick-action-btn btn-action-disabled"
+              disabled
+              style={{ opacity: 0.6, cursor: 'not-allowed' }}
+            >
+              <i className="fa-solid fa-ban"></i> OUT OF STOCK
             </button>
           ) : (
             <button
               type="button"
-              className="btn btn-primary card-action-btn"
+              className="quick-action-btn"
               onClick={(e) => {
                 e.stopPropagation();
                 addToCart(product);
               }}
             >
-              <i className="fa-solid fa-bag-shopping"></i> Add to Bag
+              <i className="fa-solid fa-plus"></i> ADD TO BAG
             </button>
           )}
-
-          <button
-            type="button"
-            className="btn btn-secondary card-enquire-btn"
-            onClick={handleProposalInquiry}
-            title="Custom / Bulk Order Enquiry"
-          >
-            <i className="fa-regular fa-envelope"></i>
-          </button>
         </div>
       </div>
-    </div>
+
+      <div className="product-info">
+        <span className="product-category-meta">
+          {product.category} {product.subItem ? `• ${product.subItem}` : ''}
+        </span>
+        <h4 className="product-title">{product.title || product.name}</h4>
+
+        <div className="product-price-row">
+          <div className="card-deal-pricing">
+            <div className="card-deal-row">
+              {discountPct > 0 && (
+                <span className="card-discount-pct">
+                  <i className="fa-solid fa-arrow-down"></i>{discountPct}%
+                </span>
+              )}
+              {mrp > sellingPrice && (
+                <span className="card-mrp-price">₹{mrp.toLocaleString('en-IN')}</span>
+              )}
+              <span className="card-selling-price">{formatPrice(sellingPrice)}</span>
+            </div>
+          </div>
+
+          {isCorporate ? (
+            <button
+              type="button"
+              className="btn-corporate-mini-enquire"
+              onClick={handleProposalInquiry}
+              title="Request Corporate Proposal"
+            >
+              <i className="fa-solid fa-paper-plane"></i> Enquire
+            </button>
+          ) : product.outOfStock ? (
+            <button
+              type="button"
+              className="add-cart-mini-btn btn-stock-disabled"
+              disabled
+              title="Out of stock"
+              style={{ opacity: 0.5, cursor: 'not-allowed', background: '#e2e8f0', color: '#a0aec0' }}
+            >
+              <i className="fa-solid fa-ban"></i>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="add-cart-mini-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product);
+              }}
+              title="Add to bag"
+            >
+              <i className="fa-solid fa-bag-shopping"></i>
+            </button>
+          )}
+        </div>
+      </div>
+    </article>
   );
 }
