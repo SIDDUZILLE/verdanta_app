@@ -5,6 +5,8 @@ import CategoryPills from '../components/storefront/CategoryPills';
 import ProductGrid from '../components/storefront/ProductGrid';
 import CorporateSection from '../components/storefront/CorporateSection';
 import WholesaleSection from '../components/storefront/WholesaleSection';
+import ShowroomSection from '../components/storefront/ShowroomSection';
+import SustainabilitySection from '../components/storefront/SustainabilitySection';
 import Footer from '../components/storefront/Footer';
 import CartDrawer from '../components/storefront/CartDrawer';
 import QuickViewModal from '../components/storefront/QuickViewModal';
@@ -25,6 +27,8 @@ export default function StorefrontPage() {
         <ProductGrid />
         <CorporateSection />
         <WholesaleSection />
+        <ShowroomSection />
+        <SustainabilitySection />
       </main>
       <Footer />
 

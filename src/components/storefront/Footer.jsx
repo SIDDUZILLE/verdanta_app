@@ -12,7 +12,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" id="contact">
       <div className="container footer-container">
         {/* Col 1: Brand Info */}
         <div className="footer-col brand-col">

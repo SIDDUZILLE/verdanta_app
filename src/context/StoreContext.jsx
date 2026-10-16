@@ -419,13 +419,58 @@ export function StoreProvider({ children }) {
   }, []);
 
   const filterByCategory = useCallback((categoryId, subCat = null) => {
-    setActiveCategory(categoryId);
-    setActiveSubCategory(subCat);
+    setSearchQuery('');
+    if (!categoryId || categoryId === 'all') {
+      setActiveCategory('all');
+      setActiveSubCategory(null);
+      setActiveChannel('all');
+    } else {
+      const normId = normalizeCategoryId(categoryId);
+      setActiveCategory(normId);
+      setActiveSubCategory(subCat && typeof subCat === 'string' && subCat.trim() ? subCat.trim() : null);
+
+      if (normId.startsWith('wholesale')) {
+        setActiveChannel('wholesale');
+      } else if (normId.startsWith('export')) {
+        setActiveChannel('export');
+      } else if (normId === 'corporate-gifting') {
+        setActiveChannel('corporate');
+      } else {
+        setActiveChannel('all');
+      }
+    }
+
     const catElem = document.getElementById('categories');
     if (catElem) {
       catElem.scrollIntoView({ behavior: 'smooth' });
     }
   }, []);
+
+  // Open Corporate Gifting with smooth scroll and card highlight
+  const openCorporateGifting = useCallback((targetSubCategory = 'all') => {
+    const section = document.getElementById('corporate');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (targetSubCategory && targetSubCategory !== 'all') {
+      const targetLower = targetSubCategory.toLowerCase().trim();
+      const card = corporateCards.find(c =>
+        c.id === targetSubCategory ||
+        (c.categoryKey && c.categoryKey.toLowerCase() === targetLower) ||
+        (c.title && c.title.toLowerCase() === targetLower)
+      );
+      if (card) {
+        setTimeout(() => {
+          const el = document.getElementById('card-' + card.id);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('highlight-active');
+            setTimeout(() => el.classList.remove('highlight-active'), 2500);
+          }
+        }, 350);
+      }
+    }
+  }, [corporateCards]);
 
   // Open Proposal Modal helper
   const openProposalModal = useCallback((title = 'General Inquiry', initialNotes = '') => {
@@ -463,6 +508,7 @@ export function StoreProvider({ children }) {
     proposalModalData,
     openProposalModal,
     closeProposalModal,
+    openCorporateGifting,
     isVisitModalOpen,
     setIsVisitModalOpen,
     isSearchOverlayOpen,
