@@ -29,12 +29,12 @@ export default function ShowroomSection() {
                   <strong>Bangalore Experience Centre</strong>
                   <span>
                     <a
-                      href="https://maps.app.goo.gl/5ZTcvKAGmps1qPbG7?g_st=aw"
+                      href="https://maps.app.goo.gl/YGx7XzbuzwafoYL19?g_st=aw"
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: 'inherit', textDecoration: 'underline' }}
                     >
-                      Indiranagar 100ft Road, Bengaluru (Open in Maps)
+                      1st Floor, Shop No.7, SVN Complex, 59, Bengaluru (Open in Maps)
                     </a>
                   </span>
                   <span
@@ -68,7 +68,7 @@ export default function ShowroomSection() {
                 SCHEDULE A PRIVATE VISIT
               </button>
               <a
-                href="https://maps.app.goo.gl/5ZTcvKAGmps1qPbG7?g_st=aw"
+                href="https://maps.app.goo.gl/YGx7XzbuzwafoYL19?g_st=aw"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-secondary"

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 
 export default function Navbar() {
@@ -90,18 +89,20 @@ export default function Navbar() {
           className="brand-logo"
           id="brandLogo"
           onClick={(e) => handleNavScroll('home', e)}
+          title="Verdanta World — Crafted by Nature, Inspired by Art"
         >
           <div className="brand-icon">
-            <svg viewBox="0 0 40 40" width="34" height="34" fill="currentColor">
-              <path
-                d="M20 2C16.8 2 14.1 3.8 12.8 6.5C11.5 5.6 9.8 5 8 5C4.7 5 2 7.7 2 11C2 13.5 3.5 15.6 5.6 16.5C5.2 17.6 5 18.8 5 20C5 25.5 9.5 30 15 30H18V38H22V30H25C30.5 30 35 25.5 35 20C35 18.8 34.8 17.6 34.4 16.5C36.5 15.6 38 13.5 38 11C38 7.7 35.3 5 32 5C30.2 5 28.5 5.6 27.2 6.5C25.9 3.8 23.2 2 20 2Z"
-                opacity="0.9"
-              />
-            </svg>
+            <img
+              src="/images/logo-icon.png"
+              alt="Verdanta World Emblem"
+              className="brand-emblem-img"
+              width="44"
+              height="44"
+            />
           </div>
           <div className="brand-text">
             <span className="brand-name">Verdanta World</span>
-            <span className="brand-tagline">ARTISAN • HERITAGE • CONSCIOUS</span>
+            <span className="brand-tagline">CRAFTED BY NATURE, INSPIRED BY ART.</span>
           </div>
         </a>
 
@@ -141,16 +142,6 @@ export default function Navbar() {
             <i className="fa-solid fa-bag-shopping"></i>
             {cartItemCount > 0 && <span className="action-badge" id="cartCount">{cartItemCount}</span>}
           </button>
-
-          {/* Admin Portal Gateway */}
-          <Link
-            to="/admin"
-            className="admin-portal-btn"
-            title="Open Admin Management Portal"
-          >
-            <i className="fa-solid fa-shield-halved"></i>
-            <span className="admin-pill">Admin</span>
-          </Link>
         </div>
       </div>
 

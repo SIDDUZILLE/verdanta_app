@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 
 export default function Footer() {
@@ -27,11 +26,13 @@ export default function Footer() {
         {/* Footer Brand Column */}
         <div className="footer-col footer-col-brand">
           <div className="footer-logo">
-            <svg viewBox="0 0 40 40" width="30" height="30" fill="#c49d63">
-              <path
-                d="M20 2C16.8 2 14.1 3.8 12.8 6.5C11.5 5.6 9.8 5 8 5C4.7 5 2 7.7 2 11C2 13.5 3.5 15.6 5.6 16.5C5.2 17.6 5 18.8 5 20C5 25.5 9.5 30 15 30H18V38H22V30H25C30.5 30 35 25.5 35 20C35 18.8 34.8 17.6 34.4 16.5C36.5 15.6 38 13.5 38 11C38 7.7 35.3 5 32 5C30.2 5 28.5 5.6 27.2 6.5C25.9 3.8 23.2 2 20 2Z"
-              />
-            </svg>
+            <img
+              src="/images/logo-icon.png"
+              alt="Verdanta World Emblem"
+              className="footer-emblem-img"
+              width="36"
+              height="36"
+            />
             <span className="footer-brand-name">Verdanta World</span>
           </div>
           <p className="footer-brand-mission">
@@ -60,12 +61,17 @@ export default function Footer() {
             <br />
             <i className="fa-solid fa-location-dot"></i>{' '}
             <a
-              href="https://maps.app.goo.gl/5ZTcvKAGmps1qPbG7?g_st=aw"
+              href="https://maps.app.goo.gl/YGx7XzbuzwafoYL19?g_st=aw"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: 'inherit', textDecoration: 'underline' }}
+              style={{ color: 'inherit', textDecoration: 'none', lineHeight: '1.5', display: 'inline-block' }}
             >
-              Jaipur Atelier &bull; Bengaluru Experience Centre (Map)
+              <strong>Verdanta World Experience Centre</strong><br />
+              1st Floor, Shop No.7, SVN Complex, 59, Bengaluru, Karnataka<br />
+              <span style={{ color: 'var(--color-gold)', textDecoration: 'underline', fontSize: '0.85rem' }}>
+                <i className="fa-solid fa-arrow-up-right-from-square" style={{ marginRight: '4px' }}></i>
+                Open in Google Maps
+              </span>
             </a>
           </p>
           <p className="footer-copyright">
@@ -166,22 +172,6 @@ export default function Footer() {
                 <i className="fa-solid fa-arrow-right"></i>
               </button>
             </form>
-          </div>
-
-          <div style={{ marginTop: '20px' }}>
-            <Link
-              to="/admin"
-              className="admin-portal-btn"
-              style={{
-                display: 'inline-flex',
-                color: 'var(--color-gold-light)',
-                backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                borderColor: 'rgba(197, 157, 95, 0.3)'
-              }}
-              title="Open Staff Admin Management Portal"
-            >
-              <i className="fa-solid fa-lock" style={{ marginRight: '6px' }}></i> Staff Management Portal
-            </Link>
           </div>
         </div>
       </div>
