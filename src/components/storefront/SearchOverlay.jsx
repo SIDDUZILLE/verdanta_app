@@ -139,24 +139,29 @@ export default function SearchOverlay() {
               <span>Try selecting "All Collections" or searching for lamp, clock, terracotta, or brass</span>
             </div>
           ) : (
-            results.slice(0, 16).map(p => (
-              <div
-                key={p.id}
-                className="search-result-card"
-                onClick={() => {
-                  setIsSearchOverlayOpen(false);
-                  setQuickViewProduct(p);
-                }}
-              >
-                <img
-                  src={p.image || 'images/wooden-gallery.jpg'}
-                  alt={p.title || p.name}
-                  className="search-result-img"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = 'images/wooden-gallery.jpg';
+            results.slice(0, 16).map(p => {
+              const pImg = p.image && (p.image.startsWith('http') || p.image.startsWith('data:') || p.image.startsWith('/'))
+                ? p.image
+                : (p.image ? `/${p.image}` : '/images/wooden-gallery.jpg');
+
+              return (
+                <div
+                  key={p.id}
+                  className="search-result-card"
+                  onClick={() => {
+                    setIsSearchOverlayOpen(false);
+                    setQuickViewProduct(p);
                   }}
-                />
+                >
+                  <img
+                    src={pImg}
+                    alt={p.title || p.name}
+                    className="search-result-img"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/images/wooden-gallery.jpg';
+                    }}
+                  />
                 <div className="search-result-info">
                   <h5>{p.title || p.name}</h5>
                   <span className="search-result-cat">
@@ -176,8 +181,8 @@ export default function SearchOverlay() {
                   <i className="fa-solid fa-bag-shopping"></i>
                 </button>
               </div>
-            ))
-          )}
+            );
+          }))}
         </div>
       </div>
     </div>

@@ -30,6 +30,14 @@ export default function ProductCard({ product }) {
     openProposalModal(product.title || product.name, notes);
   };
 
+  const resolveImage = (img) => {
+    if (!img) return '/images/wooden-gallery.jpg';
+    if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:') || img.startsWith('blob:')) {
+      return img;
+    }
+    return img.startsWith('/') ? img : `/${img}`;
+  };
+
   return (
     <article
       className={`product-card ${product.outOfStock ? 'is-out-of-stock' : ''}`}
@@ -38,13 +46,13 @@ export default function ProductCard({ product }) {
     >
       <div className="product-img-box">
         <img
-          src={product.image || 'images/wooden-gallery.jpg'}
+          src={resolveImage(product.image)}
           alt={product.title || product.name}
           className="product-img"
           loading="lazy"
           onError={(e) => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = 'images/wooden-gallery.jpg';
+            e.currentTarget.src = '/images/wooden-gallery.jpg';
           }}
         />
 

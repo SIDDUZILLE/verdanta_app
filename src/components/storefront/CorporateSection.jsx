@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../../context/StoreContext';
 
 export default function CorporateSection() {
-  const { corporateCards, openProposalModal } = useStore();
+  const { corporateCards, openProposalModal, openCatalogueModal } = useStore();
 
   const handleEnquiry = (card) => {
     const notes = `Corporate Gifting Inquiry: ${card.title}\nCategory: ${card.categoryKey || card.title}\nPlease share customization options, minimum order quantities, and enterprise pricing.`;
@@ -57,6 +57,38 @@ export default function CorporateSection() {
               </div>
             );
           })}
+        </div>
+
+        {/* Informational Callout Bar from Legacy Design */}
+        <div className="corporate-action-banner" style={{ marginTop: '48px' }}>
+          <div className="corporate-action-content">
+            <h3>Elevate Your Company Gifting with Conscious Impact</h3>
+            <p>
+              Over 180+ enterprises trust Verdanta World to deliver meaningful, memorable gifts that champion artisan
+              livelihoods and ESG compliance.
+            </p>
+          </div>
+          <div className="corporate-action-buttons">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() =>
+                openProposalModal(
+                  'Employee & Client Gifts',
+                  'Inquiry for corporate employee gifting, client appreciation sets, and ESG compliance options.'
+                )
+              }
+            >
+              REQUEST A PROPOSAL
+            </button>
+            <button
+              type="button"
+              className="btn btn-light-outline"
+              onClick={openCatalogueModal}
+            >
+              VIEW ESG BROCHURE
+            </button>
+          </div>
         </div>
       </div>
     </section>

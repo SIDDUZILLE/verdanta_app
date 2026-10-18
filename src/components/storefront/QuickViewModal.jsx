@@ -28,6 +28,14 @@ export default function QuickViewModal() {
     openProposalModal(product.title || product.name, notes);
   };
 
+  const resolveImage = (img) => {
+    if (!img) return '/images/wooden-gallery.jpg';
+    if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:') || img.startsWith('blob:')) {
+      return img;
+    }
+    return img.startsWith('/') ? img : `/${img}`;
+  };
+
   return (
     <div className="modal-backdrop active" id="quickViewModal">
       <div className="modal-dialog modal-dialog-lg">
@@ -43,12 +51,12 @@ export default function QuickViewModal() {
         <div className="quick-view-grid">
           <div className="quick-view-img-col">
             <img
-              src={product.image || 'images/wooden-gallery.jpg'}
+              src={resolveImage(product.image)}
               alt={product.title || product.name}
               className="quick-view-img"
               onError={(e) => {
                 e.currentTarget.onerror = null;
-                e.currentTarget.src = 'images/wooden-gallery.jpg';
+                e.currentTarget.src = '/images/wooden-gallery.jpg';
               }}
             />
           </div>

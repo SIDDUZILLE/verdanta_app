@@ -1,7 +1,6 @@
 import React from 'react';
 import Navbar from '../components/storefront/Navbar';
 import Hero from '../components/storefront/Hero';
-import CategoryPills from '../components/storefront/CategoryPills';
 import ProductGrid from '../components/storefront/ProductGrid';
 import CorporateSection from '../components/storefront/CorporateSection';
 import WholesaleSection from '../components/storefront/WholesaleSection';
@@ -12,6 +11,7 @@ import CartDrawer from '../components/storefront/CartDrawer';
 import QuickViewModal from '../components/storefront/QuickViewModal';
 import ProposalModal from '../components/storefront/ProposalModal';
 import VisitModal from '../components/storefront/VisitModal';
+import CatalogueModal from '../components/storefront/CatalogueModal';
 import SearchOverlay from '../components/storefront/SearchOverlay';
 import { useStore } from '../context/StoreContext';
 
@@ -23,7 +23,6 @@ export default function StorefrontPage() {
       <Navbar />
       <main>
         <Hero />
-        <CategoryPills />
         <ProductGrid />
         <CorporateSection />
         <WholesaleSection />
@@ -37,6 +36,7 @@ export default function StorefrontPage() {
       <QuickViewModal />
       <ProposalModal />
       <VisitModal />
+      <CatalogueModal />
       <SearchOverlay />
 
       {/* Global Toast Notification */}

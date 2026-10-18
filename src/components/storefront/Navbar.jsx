@@ -181,7 +181,13 @@ export default function Navbar() {
                 <div className="mega-dropdown-grid" id="shopMegaDropdownGrid">
                   {/* Col 1 */}
                   <div className="mega-col">
-                    <h4 className="mega-title">1. ARTISAN GALLERY</h4>
+                    <h4
+                      className="mega-title"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => handleCategoryClick('Artisan Gallery', null, e)}
+                    >
+                      1. ARTISAN GALLERY
+                    </h4>
                     <ul className="mega-list">
                       <li>
                         <a href="#categories" onClick={(e) => handleCategoryClick('Artisan Gallery', 'Lamps & Ambient Lighting', e)}>
@@ -213,30 +219,36 @@ export default function Navbar() {
 
                   {/* Col 2 */}
                   <div className="mega-col">
-                    <h4 className="mega-title">2. WOODEN CRAFTS</h4>
+                    <h4
+                      className="mega-title"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => handleCategoryClick('Wooden Crafts', null, e)}
+                    >
+                      2. WOODEN CRAFTS
+                    </h4>
                     <ul className="mega-list">
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Gallery', 'Toys', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Toys', e)}>
                           <i className="fa-solid fa-angle-right"></i> Toys
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Gallery', 'Keychains & Mini Gifts', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Keychains & Mini Gifts', e)}>
                           <i className="fa-solid fa-angle-right"></i> Keychains &amp; Mini Gifts
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Gallery', 'Tea-Light Candles', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Tea-Light Candles', e)}>
                           <i className="fa-solid fa-angle-right"></i> Tea-Light Candles
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Gallery', 'Wooden Clocks', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Wooden Clocks', e)}>
                           <i className="fa-solid fa-angle-right"></i> Wooden Clocks
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Gallery', 'Wooden Decor', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Wooden Decor', e)}>
                           <i className="fa-solid fa-angle-right"></i> Wooden Decor
                         </a>
                       </li>
@@ -245,58 +257,70 @@ export default function Navbar() {
 
                   {/* Col 3 */}
                   <div className="mega-col">
-                    <h4 className="mega-title">3. PREMIUM HOME DÉCOR</h4>
+                    <h4
+                      className="mega-title"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => handleCategoryClick('Premium Home Décor', null, e)}
+                    >
+                      3. PREMIUM HOME DÉCOR
+                    </h4>
                     <ul className="mega-list">
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Decor', 'Table Décor', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Table Décor', e)}>
                           <i className="fa-solid fa-angle-right"></i> Table Décor
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Decor', 'Wall Décor', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Wall Décor', e)}>
                           <i className="fa-solid fa-angle-right"></i> Wall Décor
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Decor', 'Traditional & Heritage Décor', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Traditional & Heritage Décor', e)}>
                           <i className="fa-solid fa-angle-right"></i> Traditional &amp; Heritage Décor
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Decor', 'Sculptures & Figurines', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Sculptures & Figurines', e)}>
                           <i className="fa-solid fa-angle-right"></i> Sculptures &amp; Figurines
                         </a>
                       </li>
                     </ul>
                   </div>
 
-                  {/* Col 4 */}
+                  {/* Col 4 - Return Gifting */}
                   <div className="mega-col">
-                    <h4 className="mega-title">4. GIFTING</h4>
+                    <h4
+                      className="mega-title"
+                      style={{ cursor: 'pointer' }}
+                      onClick={(e) => handleCategoryClick('Return Gifting', null, e)}
+                    >
+                      4. RETURN GIFTING
+                    </h4>
                     <ul className="mega-list">
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Personalization Gifting', 'Return Gifts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Return Gifts
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Personalization Gifting', 'Festive Gifts', e)}>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Festive Gifts', e)}>
                           <i className="fa-solid fa-angle-right"></i> Festive Gifts
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Personalization Gifting', 'Curated Gift Sets', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Curated Gift Sets
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Birthday Gifts', e)}>
+                          <i className="fa-solid fa-angle-right"></i> Birthday Gifts
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Personalization Gifting', 'Eco-Friendly Gifts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Eco-Friendly Gifts
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Anniversary Gifting', e)}>
+                          <i className="fa-solid fa-angle-right"></i> Anniversary Gifting
                         </a>
                       </li>
                       <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Personalization Gifting', 'Occasion Gifts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Occasion Gifts
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'House Warming', e)}>
+                          <i className="fa-solid fa-angle-right"></i> House Warming
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Wedding Gifts', e)}>
+                          <i className="fa-solid fa-angle-right"></i> Wedding Gifts
                         </a>
                       </li>
                     </ul>

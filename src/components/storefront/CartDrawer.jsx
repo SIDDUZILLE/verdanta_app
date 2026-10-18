@@ -128,25 +128,30 @@ export default function CartDrawer() {
               </button>
             </div>
           ) : (
-            cart.map(item => (
-              <div key={item.id} className="cart-item">
-                <img
-                  src={item.image || 'images/wooden-gallery.jpg'}
-                  alt={item.title}
-                  className="cart-item-img"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = 'images/wooden-gallery.jpg';
-                  }}
-                />
-                <div className="cart-item-details">
-                  <h4 className="cart-item-title">{item.title}</h4>
-                  <span className="cart-item-meta">{item.subItem || item.category}</span>
-                  <div className="cart-item-price">
-                    {formatPrice(item.price * item.quantity)}
-                  </div>
-                  <div className="cart-item-actions">
-                    <div className="quantity-stepper">
+            cart.map(item => {
+              const itemImg = item.image && (item.image.startsWith('http') || item.image.startsWith('data:') || item.image.startsWith('/'))
+                ? item.image
+                : (item.image ? `/${item.image}` : '/images/wooden-gallery.jpg');
+
+              return (
+                <div key={item.id} className="cart-item">
+                  <img
+                    src={itemImg}
+                    alt={item.title}
+                    className="cart-item-img"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/images/wooden-gallery.jpg';
+                    }}
+                  />
+                  <div className="cart-item-details">
+                    <h4 className="cart-item-title">{item.title}</h4>
+                    <span className="cart-item-meta">{item.subItem || item.category}</span>
+                    <div className="cart-item-price">
+                      {formatPrice(item.price * item.quantity)}
+                    </div>
+                    <div className="cart-item-actions">
+                      <div className="quantity-stepper">
                       <button
                         type="button"
                         className="qty-btn"
@@ -175,7 +180,8 @@ export default function CartDrawer() {
                   </div>
                 </div>
               </div>
-            ))
+            );
+          })
           )}
         </div>
 

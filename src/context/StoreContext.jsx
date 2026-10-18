@@ -61,18 +61,18 @@ export const DEFAULT_CATEGORIES = [
     id: 'personalization-gifting',
     channel: 'shop',
     channelName: 'Shop Collections',
-    name: 'Gifting',
-    displayName: '4. Gifting',
+    name: 'Return Gifting',
+    displayName: '4. Return Gifting',
     badge: 'Collection 04',
     description: 'Artisan return gifts, festive boxes, curated gift sets, eco-friendly gifts & bespoke keepsakes.',
     icon: 'fa-gift',
     image: 'images/personalization.jpg',
     subCategories: [
-      'Return Gifts',
       'Festive Gifts',
-      'Curated Gift Sets',
-      'Eco-Friendly Gifts',
-      'Occasion Gifts'
+      'Birthday Gifts',
+      'Anniversary Gifting',
+      'House Warming',
+      'Wedding Gifts'
     ]
   },
   {
@@ -216,8 +216,17 @@ export function StoreProvider({ children }) {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [proposalModalData, setProposalModalData] = useState({ isOpen: false, title: 'General Inquiry', initialNotes: '' });
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
+  const [isCatalogueModalOpen, setIsCatalogueModalOpen] = useState(false);
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+
+  const openCatalogueModal = useCallback(() => {
+    setIsCatalogueModalOpen(true);
+  }, []);
+
+  const closeCatalogueModal = useCallback(() => {
+    setIsCatalogueModalOpen(false);
+  }, []);
 
   // Show Toast
   const showToast = useCallback((msg) => {
@@ -243,7 +252,7 @@ export function StoreProvider({ children }) {
 
   // Initial Load from JSON / localStorage / API
   useEffect(() => {
-    // 1. Products
+    // 1. Load cached products first for instant rendering
     const cachedProducts = localStorage.getItem('verdanta_products');
     if (cachedProducts) {
       try {
@@ -251,14 +260,16 @@ export function StoreProvider({ children }) {
         if (Array.isArray(parsed) && parsed.length > 0) setProducts(parsed);
       } catch (e) {}
     }
+
+    // Always fetch fresh products.json to ensure all 141+ products and images are loaded
     fetch('/products.json')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          setProducts(prev => prev.length > 0 ? prev : data);
-          if (!cachedProducts) {
+          setProducts(data);
+          try {
             localStorage.setItem('verdanta_products', JSON.stringify(data));
-          }
+          } catch (e) {}
         }
       })
       .catch(err => console.warn('Could not load products.json:', err));
@@ -270,17 +281,20 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(cachedCats);
         if (Array.isArray(parsed) && parsed.length > 0) setCategories(parsed);
       } catch (e) {}
-    } else {
-      fetch('/categories.json')
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data) && data.length > 0) {
-            setCategories(data);
-            localStorage.setItem('verdanta_categories', JSON.stringify(data));
-          }
-        })
-        .catch(() => {});
     }
+
+    fetch('/categories.json')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCategories(data);
+          try {
+            localStorage.setItem('verdanta_categories', JSON.stringify(data));
+          } catch (e) {}
+        }
+      })
+      .catch(() => {});
+
 
     // 3. Hero Data
     const cachedHero = localStorage.getItem('verdanta_hero_data');
@@ -511,6 +525,10 @@ export function StoreProvider({ children }) {
     openCorporateGifting,
     isVisitModalOpen,
     setIsVisitModalOpen,
+    isCatalogueModalOpen,
+    setIsCatalogueModalOpen,
+    openCatalogueModal,
+    closeCatalogueModal,
     isSearchOverlayOpen,
     setIsSearchOverlayOpen,
     toastMessage,

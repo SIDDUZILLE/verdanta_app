@@ -18,6 +18,28 @@ export default function CategoryPills() {
   const shopCategories = categories.filter(c => c.channel === 'shop');
   const currentCatObj = categories.find(c => c.id === activeCategory);
 
+  const resolveImage = (img) => {
+    if (!img) return '/images/wooden-gallery.jpg';
+    if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:') || img.startsWith('blob:')) {
+      return img;
+    }
+    return img.startsWith('/') ? img : `/${img}`;
+  };
+
+  const getCategoryCoverImage = (cat) => {
+    if (cat && cat.image && typeof cat.image === 'string' && cat.image.trim()) {
+      return resolveImage(cat.image.trim());
+    }
+    const catProd = products.find(p => {
+      const pCatId = p.categoryId || p.category;
+      return (pCatId === cat.id || p.category === cat.name) && p.image;
+    });
+    if (catProd && catProd.image) {
+      return resolveImage(catProd.image);
+    }
+    return '/images/wooden-gallery.jpg';
+  };
+
   return (
     <section className="collections-section" id="collections" style={{ paddingBottom: '0' }}>
       <div className="container">
@@ -47,6 +69,7 @@ export default function CategoryPills() {
           {shopCategories.map((cat, idx) => {
             const count = products.filter(p => p.categoryId === cat.id || p.category === cat.name).length;
             const isSelected = activeCategory === cat.id;
+            const coverImg = getCategoryCoverImage(cat);
 
             return (
               <div
@@ -57,16 +80,20 @@ export default function CategoryPills() {
                   borderColor: isSelected ? 'var(--color-gold)' : undefined,
                   boxShadow: isSelected ? 'var(--shadow-md)' : undefined
                 }}
-                onClick={() => filterByCategory(cat.id)}
+                onClick={() => {
+                  filterByCategory(cat.id);
+                  const el = document.getElementById('categories');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 <div className="category-card-image-wrap" style={{ height: '220px' }}>
                   <img
-                    src={cat.image || 'images/wooden-gallery.jpg'}
+                    src={coverImg}
                     alt={cat.name}
                     className="category-card-img"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = 'images/wooden-gallery.jpg';
+                      e.currentTarget.src = '/images/wooden-gallery.jpg';
                     }}
                   />
                   <span className="category-tag-badge">
@@ -81,8 +108,37 @@ export default function CategoryPills() {
 
                   {cat.subCategories && (
                     <ul className="subcategories-tag-list" style={{ marginBottom: '8px' }}>
-                      {cat.subCategories.slice(0, 3).map((sub, sIdx) => (
-                        <li key={sIdx} style={{ fontSize: '0.72rem' }}>• {sub}</li>
+                      {cat.subCategories.slice(0, 4).map((sub, sIdx) => (
+                        <li key={sIdx}>
+                          <button
+                            type="button"
+                            className="subcategory-pill-btn"
+                            style={{
+                              background: 'rgba(197, 157, 95, 0.08)',
+                              border: '1px solid rgba(197, 157, 95, 0.25)',
+                              borderRadius: '20px',
+                              padding: '2px 8px',
+                              fontSize: '0.72rem',
+                              color: 'var(--color-primary)',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              marginRight: '4px',
+                              marginBottom: '4px'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              filterByCategory(cat.id);
+                              setActiveSubCategory(sub);
+                              const el = document.getElementById('categories');
+                              if (el) el.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                          >
+                            <i className="fa-solid fa-angle-right" style={{ fontSize: '0.6rem', color: 'var(--color-gold)' }}></i>
+                            {sub}
+                          </button>
+                        </li>
                       ))}
                     </ul>
                   )}
@@ -94,7 +150,7 @@ export default function CategoryPills() {
                   <div className="category-card-btn" style={{ justifyContent: 'space-between', width: '100%' }}>
                     <span>{count} CREATIONS</span>
                     <span>
-                      VIEW <i className="fa-solid fa-arrow-right"></i>
+                      EXPLORE <i className="fa-solid fa-arrow-right"></i>
                     </span>
                   </div>
                 </div>
@@ -102,6 +158,7 @@ export default function CategoryPills() {
             );
           })}
         </div>
+
 
         {/* Catalog Search & Sub-category Filter Bar */}
         <div
