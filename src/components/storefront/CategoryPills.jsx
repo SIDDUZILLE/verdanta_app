@@ -43,7 +43,7 @@ export default function CategoryPills() {
         </div>
 
         {/* 4 Main Visual Category Cards Grid */}
-        <div className="category-cards-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+        <div className="category-cards-grid">
           {shopCategories.map((cat, idx) => {
             const count = products.filter(p => p.categoryId === cat.id || p.category === cat.name).length;
             const isSelected = activeCategory === cat.id;
