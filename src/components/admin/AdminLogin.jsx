@@ -154,23 +154,6 @@ export default function AdminLogin() {
           >
             <i className="fa-solid fa-lock"></i> Authorize &amp; Sign In
           </button>
-
-          <div
-            style={{
-              marginTop: '16px',
-              fontSize: '0.78rem',
-              color: '#665',
-              background: '#faf7f0',
-              padding: '10px 12px',
-              borderRadius: '6px',
-              border: '1px dashed #dcd4c5',
-              textAlign: 'center',
-              lineHeight: '1.5'
-            }}
-          >
-            <strong>Default Admin Credentials:</strong><br />
-            Username: <code style={{ background: '#ede6d8', padding: '1px 5px', borderRadius: '3px', fontWeight: 600 }}>admin</code> &bull; Password: <code style={{ background: '#ede6d8', padding: '1px 5px', borderRadius: '3px', fontWeight: 600 }}>Verdanta@Admin2026</code>
-          </div>
         </form>
 
         <div className="admin-auth-footer" style={{ marginTop: '20px', textAlign: 'center' }}>
