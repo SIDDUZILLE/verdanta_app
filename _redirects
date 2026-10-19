@@ -1,2 +1,2 @@
-# Netlify and Cloudflare Pages redirects
-/admin    /admin.html    200
+# SPA routing redirects for Netlify & Cloudflare
+/*    /index.html   200
