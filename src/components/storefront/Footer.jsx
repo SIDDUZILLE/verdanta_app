@@ -40,8 +40,8 @@ export default function Footer() {
           </p>
           <p className="footer-contact-info">
             <i className="fa-solid fa-envelope"></i>{' '}
-            <a href="mailto:contact@verdantaworld.com" style={{ color: 'inherit', textDecoration: 'none' }}>
-              contact@verdantaworld.com
+            <a href="mailto:info@verdantaworld.com" style={{ color: 'inherit', textDecoration: 'none' }}>
+              info@verdantaworld.com
             </a>
             <br />
             <i className="fa-solid fa-phone"></i>{' '}
