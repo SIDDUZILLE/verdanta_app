@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 
 export default function Footer() {
-  const { whatsappNumber, filterByCategory, openCorporateGifting, showToast } = useStore();
+  const { whatsappNumber, contactEmail = 'info@verdantaworld.com', filterByCategory, openCorporateGifting, showToast } = useStore();
   const [emailInput, setEmailInput] = useState('');
 
   const handleNavScroll = (targetId, e) => {
@@ -40,8 +40,14 @@ export default function Footer() {
           </p>
           <p className="footer-contact-info">
             <i className="fa-solid fa-envelope"></i>{' '}
-            <a href="mailto:info@verdantaworld.com" style={{ color: 'inherit', textDecoration: 'none' }}>
-              info@verdantaworld.com
+            <a
+              href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contactEmail || "info@verdantaworld.com")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Send email via Gmail"
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              {contactEmail || "info@verdantaworld.com"}
             </a>
             <br />
             <i className="fa-solid fa-phone"></i>{' '}

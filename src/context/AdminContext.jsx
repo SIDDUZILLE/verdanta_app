@@ -65,9 +65,10 @@ export function AdminProvider({ children }) {
   const [config, setConfig] = useState(() => {
     try {
       const stored = localStorage.getItem('verdanta_config');
-      return stored ? JSON.parse(stored) : {
+      return stored ? { contact_email: 'info@verdantaworld.com', ...JSON.parse(stored) } : {
         mongodb_uri: '',
         whatsapp_number: '918867688699',
+        contact_email: 'info@verdantaworld.com',
         admin_username: 'admin',
         admin_password: 'Verdanta@Admin2026'
       };
@@ -75,6 +76,7 @@ export function AdminProvider({ children }) {
       return {
         mongodb_uri: '',
         whatsapp_number: '918867688699',
+        contact_email: 'info@verdantaworld.com',
         admin_username: 'admin',
         admin_password: 'Verdanta@Admin2026'
       };
@@ -379,6 +381,7 @@ export function AdminProvider({ children }) {
     const nextCfg = { ...config, ...newConfig };
     setConfig(nextCfg);
     localStorage.setItem('verdanta_config', JSON.stringify(nextCfg));
+    broadcast({ type: 'CONFIG_UPDATED', config: nextCfg });
     showAdminToast('System settings saved successfully!');
 
     fetch('/api/config', {

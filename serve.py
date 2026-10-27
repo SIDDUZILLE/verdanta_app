@@ -44,6 +44,7 @@ def load_config():
     default_cfg = {
         "mongodb_uri": "",
         "whatsapp_number": "918867688699",
+        "contact_email": "info@verdantaworld.com",
         "admin_username": "admin",
         "admin_password": "Verdanta@Admin2026"
     }
@@ -250,7 +251,8 @@ class CustomAPIRequestHandler(http.server.SimpleHTTPRequestHandler):
         if path == '/api/config':
             cfg = load_config()
             public_cfg = {
-                "whatsapp_number": cfg.get("whatsapp_number", "918867688699")
+                "whatsapp_number": cfg.get("whatsapp_number", "918867688699"),
+                "contact_email": cfg.get("contact_email", "info@verdantaworld.com")
             }
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
@@ -350,6 +352,31 @@ class CustomAPIRequestHandler(http.server.SimpleHTTPRequestHandler):
         path = self.path.split('?')[0]
         content_length = int(self.headers.get('Content-Length', 0))
         body = self.rfile.read(content_length)
+
+        if path == '/api/config':
+            try:
+                data = json.loads(body.decode('utf-8'))
+                if isinstance(data, dict):
+                    cfg = load_config()
+                    cfg.update(data)
+                    save_config(cfg)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"success": True, "config": cfg}).encode('utf-8'))
+                    return
+                else:
+                    self.send_response(400)
+                    self.end_headers()
+                    self.wfile.write(b'{"success": false, "error": "Invalid config data"}')
+                    return
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
+                return
+
 
         if path == '/api/db-settings':
             try:

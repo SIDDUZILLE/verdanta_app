@@ -6,10 +6,24 @@ export default function SettingsManager() {
 
   const [formData, setFormData] = useState({
     whatsapp_number: config.whatsapp_number || '918867688699',
+    contact_email: config.contact_email || 'info@verdantaworld.com',
     admin_username: config.admin_username || 'admin',
     admin_password: config.admin_password || 'Verdanta@Admin2026',
     mongodb_uri: config.mongodb_uri || ''
   });
+
+  React.useEffect(() => {
+    if (config) {
+      setFormData(prev => ({
+        ...prev,
+        whatsapp_number: config.whatsapp_number || prev.whatsapp_number,
+        contact_email: config.contact_email || prev.contact_email,
+        admin_username: config.admin_username || prev.admin_username,
+        admin_password: config.admin_password || prev.admin_password,
+        mongodb_uri: config.mongodb_uri !== undefined ? config.mongodb_uri : prev.mongodb_uri
+      }));
+    }
+  }, [config]);
 
   const [cloudinaryName, setCloudinaryName] = useState(
     localStorage.getItem('verdanta_cloudinary_cloud_name') || ''
@@ -52,6 +66,24 @@ export default function SettingsManager() {
               required
               value={formData.whatsapp_number}
               onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value })}
+            />
+          </div>
+        </div>
+
+        {/* Official Store Contact Email */}
+        <div className="settings-group">
+          <h4><i className="fa-solid fa-envelope" style={{ color: 'var(--color-primary)' }}></i> Official Contact & Support Email</h4>
+          <p className="settings-desc">
+            This email address is shown in the footer and across the store. When visitors click the email link, it opens Gmail directly with your address pre-filled as recipient.
+          </p>
+          <div className="form-group">
+            <label>Official Contact Email</label>
+            <input
+              type="email"
+              required
+              placeholder="e.g. info@verdantaworld.com"
+              value={formData.contact_email || ''}
+              onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
             />
           </div>
         </div>

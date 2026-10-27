@@ -184,7 +184,26 @@ export function StoreProvider({ children }) {
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [heroData, setHeroData] = useState(DEFAULT_HERO_DATA);
   const [corporateCards, setCorporateCards] = useState([]);
-  const [whatsappNumber, setWhatsappNumber] = useState('918867688699');
+  const [contactEmail, setContactEmail] = useState(() => {
+    try {
+      const stored = localStorage.getItem('verdanta_config');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.contact_email) return parsed.contact_email;
+      }
+    } catch (e) {}
+    return 'info@verdantaworld.com';
+  });
+  const [whatsappNumber, setWhatsappNumber] = useState(() => {
+    try {
+      const stored = localStorage.getItem('verdanta_config');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.whatsapp_number) return String(parsed.whatsapp_number).replace(/\D/g, '');
+      }
+    } catch (e) {}
+    return '918867688699';
+  });
 
   // Filter & Search states
   const [activeChannel, setActiveChannel] = useState('all');
@@ -335,12 +354,17 @@ export function StoreProvider({ children }) {
       })
       .catch(() => {});
 
-    // 5. Config (WhatsApp Number)
+    // 5. Config (WhatsApp Number & Contact Email)
     fetch('/config.json')
       .then(res => res.json())
       .then(cfg => {
-        if (cfg && cfg.whatsapp_number) {
-          setWhatsappNumber(String(cfg.whatsapp_number).replace(/\D/g, ''));
+        if (cfg) {
+          if (cfg.whatsapp_number) {
+            setWhatsappNumber(String(cfg.whatsapp_number).replace(/\D/g, ''));
+          }
+          if (cfg.contact_email) {
+            setContactEmail(cfg.contact_email);
+          }
         }
       })
       .catch(() => {});
@@ -362,6 +386,13 @@ export function StoreProvider({ children }) {
           setCorporateCards(updatedCorp);
         } else if (type === 'CATEGORIES_UPDATED' && Array.isArray(updatedCats)) {
           setCategories(updatedCats);
+        } else if (type === 'CONFIG_UPDATED' && event.data.config) {
+          if (event.data.config.whatsapp_number) {
+            setWhatsappNumber(String(event.data.config.whatsapp_number).replace(/\D/g, ''));
+          }
+          if (event.data.config.contact_email) {
+            setContactEmail(event.data.config.contact_email);
+          }
         }
       };
     }
@@ -506,6 +537,8 @@ export function StoreProvider({ children }) {
     heroData,
     corporateCards,
     whatsappNumber,
+    contactEmail,
+    setContactEmail,
     activeChannel,
     activeCategory,
     activeSubCategory,

@@ -207,11 +207,24 @@ if ($action === 'config') {
     header('Content-Type: application/json; charset=utf-8');
     $cfgFile = $baseDir . '/config.json';
     $wa = '918867688699';
+    $email = 'info@verdantaworld.com';
     if (file_exists($cfgFile)) {
         $cfg = json_decode(file_get_contents($cfgFile), true);
         if (!empty($cfg['whatsapp_number'])) $wa = $cfg['whatsapp_number'];
+        if (!empty($cfg['contact_email'])) $email = $cfg['contact_email'];
     }
-    echo json_encode(['whatsapp_number' => $wa]);
+    if ($method === 'POST') {
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
+        if (is_array($data)) {
+            $cfg = file_exists($cfgFile) ? json_decode(file_get_contents($cfgFile), true) : [];
+            $cfg = array_merge($cfg, $data);
+            file_put_contents($cfgFile, json_encode($cfg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            echo json_encode(['success' => true, 'config' => $cfg]);
+            exit();
+        }
+    }
+    echo json_encode(['whatsapp_number' => $wa, 'contact_email' => $email]);
     exit();
 }
 
