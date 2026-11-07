@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from '../../context/StoreContext';
 import { formatPrice } from '../../utils/formatters';
 import { buildWhatsAppOrderUrl } from '../../utils/whatsapp';
+import { syncManager } from '../../utils/syncManager';
 
 export default function CartDrawer() {
   const {
@@ -47,7 +48,8 @@ export default function CartDrawer() {
     try {
       const orders = JSON.parse(localStorage.getItem('verdanta_orders')) || [];
       orders.unshift(orderRecord);
-      localStorage.setItem('verdanta_orders', JSON.stringify(orders));
+      syncManager.save('verdanta_orders', orders, 'ORDERS_UPDATED', '/api/orders', 'orders');
+      syncManager.dispatch('NEW_ORDER', { order: orderRecord });
     } catch (e) {}
 
     alert(

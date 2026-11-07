@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { buildWhatsAppInquiryUrl } from '../../utils/whatsapp';
+import { syncManager } from '../../utils/syncManager';
 
 export default function ProposalModal() {
   const {
@@ -48,28 +49,13 @@ export default function ProposalModal() {
       createdAt: new Date().toISOString()
     };
 
-    // 1. Save to LocalStorage
+    // 1. Save and dispatch proposal in real time
     try {
       const existing = JSON.parse(localStorage.getItem('verdanta_proposals')) || [];
       existing.unshift(newProposal);
-      localStorage.setItem('verdanta_proposals', JSON.stringify(existing));
-    } catch (err) {}
-
-    // 2. Broadcast to open admin tabs
-    if (typeof BroadcastChannel !== 'undefined') {
-      try {
-        const bc = new BroadcastChannel('verdanta_store_channel');
-        bc.postMessage({ type: 'NEW_PROPOSAL', proposal: newProposal, timestamp: Date.now() });
-        bc.close();
-      } catch (err) {}
-    }
-
-    // 3. Optional Backend API sync
-    fetch('/api/proposals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newProposal)
-    }).catch(() => {});
+      syncManager.save('verdanta_proposals', existing, 'PROPOSALS_UPDATED', '/api/proposals', 'proposals');
+      syncManager.dispatch('NEW_PROPOSAL', { proposal: newProposal });
+    } catch (err) { }
 
     // 4. Open WhatsApp
     const waUrl = buildWhatsAppInquiryUrl(newProposal, whatsappNumber);

@@ -5,6 +5,16 @@ export default function Footer() {
   const { whatsappNumber, contactEmail = 'info@verdantaworld.com', filterByCategory, openCorporateGifting, showToast } = useStore();
   const [emailInput, setEmailInput] = useState('');
 
+  const formatPhone = (num) => {
+    const s = String(num || '918867688699').replace(/\D/g, '');
+    if (s.length === 12 && s.startsWith('91')) {
+      return `+91 ${s.slice(2, 7)} ${s.slice(7)}`;
+    }
+    return `+${s}`;
+  };
+
+  const formattedPhone = formatPhone(whatsappNumber);
+
   const handleNavScroll = (targetId, e) => {
     if (e && e.preventDefault) e.preventDefault();
     const el = document.getElementById(targetId);
@@ -51,8 +61,8 @@ export default function Footer() {
             </a>
             <br />
             <i className="fa-solid fa-phone"></i>{' '}
-            <a href="tel:+918867688699" style={{ color: 'inherit', textDecoration: 'none' }}>
-              +91 88676 88699
+            <a href={`tel:+${whatsappNumber}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+              {formattedPhone}
             </a>
             <br />
             <i className="fa-brands fa-whatsapp" style={{ color: '#25D366' }}></i>{' '}
@@ -62,7 +72,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               style={{ color: 'inherit', textDecoration: 'none' }}
             >
-              WhatsApp: +91 88676 88699
+              WhatsApp: {formattedPhone}
             </a>
             <br />
             <i className="fa-solid fa-location-dot"></i>{' '}

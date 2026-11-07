@@ -1,50 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 
 export default function CorporateCardsManager() {
   const { corporateCards, saveCorporateCards, uploadImage, showAdminToast } = useAdmin();
   const [cards, setCards] = useState([...corporateCards]);
+  const [uploadingCardId, setUploadingCardId] = useState(null);
+  const debounceTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (corporateCards && corporateCards.length > 0) {
+      setCards(corporateCards);
+    }
+  }, [corporateCards]);
+
+  const triggerAutoSave = (updatedCards) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      saveCorporateCards(updatedCards);
+    }, 400);
+  };
 
   const handleCardFieldChange = (cardId, field, value) => {
-    setCards(prev => prev.map(c => c.id === cardId ? { ...c, [field]: value } : c));
+    setCards(prev => {
+      const next = prev.map(c => c.id === cardId ? { ...c, [field]: value } : c);
+      triggerAutoSave(next);
+      return next;
+    });
   };
 
   const handlePhotoUpload = (cardId, e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setUploadingCardId(cardId);
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64 = event.target.result;
       try {
         const finalUrl = await uploadImage(base64);
-        setCards(prev => prev.map(c => c.id === cardId ? { ...c, image: finalUrl } : c));
-        showAdminToast('Photo uploaded for card!');
+        const next = cards.map(c => c.id === cardId ? { ...c, image: finalUrl } : c);
+        setCards(next);
+        saveCorporateCards(next);
+        showAdminToast('Photo uploaded & live synced for card!');
       } catch (err) {
-        setCards(prev => prev.map(c => c.id === cardId ? { ...c, image: base64 } : c));
+        const next = cards.map(c => c.id === cardId ? { ...c, image: base64 } : c);
+        setCards(next);
+        saveCorporateCards(next);
+      } finally {
+        setUploadingCardId(null);
       }
     };
     reader.readAsDataURL(file);
   };
 
   const handleResetPhoto = (cardId) => {
-    setCards(prev => prev.map(c => c.id === cardId ? { ...c, image: c.defaultImage || '' } : c));
-    showAdminToast('Reset card photo to default.');
+    const next = cards.map(c => c.id === cardId ? { ...c, image: c.defaultImage || '' } : c);
+    setCards(next);
+    saveCorporateCards(next);
+    showAdminToast('Reset card photo to reference & live synced!');
   };
 
   const handleDeletePhoto = (cardId) => {
-    setCards(prev => prev.map(c => c.id === cardId ? { ...c, image: '' } : c));
-    showAdminToast('Removed custom photo.');
+    const next = cards.map(c => c.id === cardId ? { ...c, image: '' } : c);
+    setCards(next);
+    saveCorporateCards(next);
+    showAdminToast('Custom photo removed & live synced.');
   };
 
   const handleSaveSingle = (cardId) => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     saveCorporateCards(cards);
-    showAdminToast('Card saved successfully!');
+    showAdminToast('Card saved & live synced successfully!');
   };
 
   const handleSaveAll = () => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     saveCorporateCards(cards);
-    showAdminToast('All 6 Corporate Gifting cards saved successfully!');
+    showAdminToast('All 6 Corporate Gifting cards saved & live synced!');
   };
 
   return (
@@ -73,13 +107,24 @@ export default function CorporateCardsManager() {
             </h3>
             <span
               className="badge"
-              style={{ background: '#e8efe9', color: '#173b2c', fontWeight: 700, padding: '3px 10px', borderRadius: '12px', fontSize: '0.78rem' }}
+              style={{
+                background: '#e8f5e9',
+                color: '#2e7d32',
+                fontWeight: 700,
+                padding: '4px 12px',
+                borderRadius: '12px',
+                fontSize: '0.78rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
             >
-              Live Reference Layout
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2e7d32', display: 'inline-block' }}></span>
+              Live Real-Time Sync Active
             </span>
           </div>
           <p style={{ color: '#666', margin: 0, fontSize: '0.92rem' }}>
-            Upload, replace, and delete photos for each of the six corporate gifting cards. All changes automatically sync to the customer storefront.
+            Upload, replace, and edit photos and content for each of the six corporate gifting cards. <strong>All changes automatically save and reflect in real-time on the Customer Dashboard.</strong>
           </p>
         </div>
 
@@ -113,6 +158,7 @@ export default function CorporateCardsManager() {
         {cards.map((card, idx) => {
           const isCustom = Boolean(card.image && card.image !== card.defaultImage && !card.image.includes('corporate/corp-'));
           const displayImg = card.image || card.defaultImage || 'images/corporate-lifestyle.jpg';
+          const isThisUploading = uploadingCardId === card.id;
 
           return (
             <div
@@ -189,7 +235,7 @@ export default function CorporateCardsManager() {
                   <label
                     className="btn btn-sm btn-primary"
                     style={{
-                      cursor: 'pointer',
+                      cursor: isThisUploading ? 'not-allowed' : 'pointer',
                       margin: 0,
                       padding: '7px 14px',
                       fontSize: '0.8rem',
@@ -204,10 +250,12 @@ export default function CorporateCardsManager() {
                       fontWeight: 700
                     }}
                   >
-                    <i className="fa-solid fa-camera"></i> Replace Photo
+                    <i className={`fa-solid ${isThisUploading ? 'fa-spinner fa-spin' : 'fa-camera'}`}></i>
+                    {isThisUploading ? 'Uploading...' : 'Replace Photo'}
                     <input
                       type="file"
                       accept="image/*"
+                      disabled={isThisUploading}
                       style={{ display: 'none' }}
                       onChange={(e) => handlePhotoUpload(card.id, e)}
                     />

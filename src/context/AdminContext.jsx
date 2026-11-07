@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { DEFAULT_CATEGORIES, DEFAULT_HERO_DATA } from './StoreContext';
+import { syncManager, uploadAndProcessImage } from '../utils/syncManager';
 
 const AdminContext = createContext(null);
 
@@ -92,55 +93,102 @@ export function AdminProvider({ children }) {
     }, 3500);
   }, []);
 
-  // Broadcast helper
-  const broadcast = useCallback((data) => {
-    if (typeof BroadcastChannel !== 'undefined') {
-      try {
-        const bc = new BroadcastChannel('verdanta_store_channel');
-        bc.postMessage({ ...data, timestamp: Date.now() });
-        bc.close();
-      } catch (e) {}
-    }
-  }, []);
-
   // Sync initial datasets if empty
   useEffect(() => {
     if (products.length === 0) {
-      fetch('/products.json')
-        .then(res => res.json())
+      fetch('/api/products')
+        .then(res => res.ok ? res.json() : fetch('/products.json').then(r => r.json()))
         .then(data => {
           if (Array.isArray(data) && data.length > 0) {
             setProducts(data);
-            localStorage.setItem('verdanta_products', JSON.stringify(data));
+            try {
+              localStorage.setItem('verdanta_products', JSON.stringify(data));
+            } catch (e) { }
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
 
     if (corporateCards.length === 0) {
-      fetch('/corporate_cards.json')
-        .then(res => res.json())
+      fetch('/api/corporate-cards')
+        .then(res => res.ok ? res.json() : fetch('/corporate_cards.json').then(r => r.json()))
         .then(data => {
           if (Array.isArray(data) && data.length > 0) {
             setCorporateCards(data);
-            localStorage.setItem('verdanta_corporate_cards', JSON.stringify(data));
+            try {
+              localStorage.setItem('verdanta_corporate_cards', JSON.stringify(data));
+            } catch (e) { }
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
 
     if (proposals.length === 0) {
-      fetch('/proposals.json')
-        .then(res => res.json())
+      fetch('/api/proposals')
+        .then(res => res.ok ? res.json() : fetch('/proposals.json').then(r => r.json()))
         .then(data => {
           if (Array.isArray(data) && data.length > 0) {
             setProposals(data);
-            localStorage.setItem('verdanta_proposals', JSON.stringify(data));
+            try {
+              localStorage.setItem('verdanta_proposals', JSON.stringify(data));
+            } catch (e) { }
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [products.length, corporateCards.length, proposals.length]);
+
+  // Real-Time Event Subscription (Receives customer inquiries, orders, and cross-tab sync)
+  useEffect(() => {
+    const unsubscribe = syncManager.subscribe((event) => {
+      const { type } = event;
+
+      if (type === 'NEW_PROPOSAL') {
+        const p = event.proposal;
+        if (p) {
+          setProposals(prev => {
+            if (prev.some(item => item.id === p.id)) return prev;
+            return [p, ...prev];
+          });
+          showAdminToast(`New Proposal Inquiry from "${p.company || p.name}"!`);
+        }
+      } else if (type === 'PROPOSALS_UPDATED') {
+        const list = event.proposals || event.data;
+        if (Array.isArray(list)) setProposals(list);
+      } else if (type === 'NEW_ORDER') {
+        const ord = event.order;
+        if (ord) {
+          setOrders(prev => {
+            if (prev.some(item => item.id === ord.id)) return prev;
+            return [ord, ...prev];
+          });
+          showAdminToast(`New Order #${ord.id} received!`);
+        }
+      } else if (type === 'ORDERS_UPDATED') {
+        const list = event.orders || event.data;
+        if (Array.isArray(list)) setOrders(list);
+      } else if (type === 'PRODUCTS_UPDATED') {
+        const prods = event.products || event.data;
+        if (Array.isArray(prods)) setProducts(prods);
+      } else if (type === 'CATEGORIES_UPDATED') {
+        const cats = event.categories || event.data;
+        if (Array.isArray(cats)) setCategories(cats);
+      } else if (type === 'HERO_UPDATED') {
+        const hero = event.hero || event.data;
+        if (hero) setHeroData(hero);
+      } else if (type === 'CORPORATE_CARDS_UPDATED') {
+        const cards = event.corporateCards || event.data;
+        if (Array.isArray(cards)) setCorporateCards(cards);
+      } else if (type === 'CONFIG_UPDATED') {
+        const cfg = event.config || event.data;
+        if (cfg) setConfig(prev => ({ ...prev, ...cfg }));
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [showAdminToast]);
 
   // Auth
   const login = (username, password) => {
@@ -175,16 +223,8 @@ export function AdminProvider({ children }) {
     };
     const nextProds = [prod, ...products];
     setProducts(nextProds);
-    localStorage.setItem('verdanta_products', JSON.stringify(nextProds));
-    broadcast({ type: 'PRODUCTS_UPDATED', products: nextProds });
-    showAdminToast(`Product "${prod.title || prod.name}" created successfully!`);
-
-    // Optional server sync
-    fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextProds)
-    }).catch(() => {});
+    syncManager.save('verdanta_products', nextProds, 'PRODUCTS_UPDATED', '/api/products', 'products');
+    showAdminToast(`Product "${prod.title || prod.name}" created and synced live!`);
   };
 
   const updateProduct = (updatedProduct) => {
@@ -195,30 +235,16 @@ export function AdminProvider({ children }) {
       priceFormatted: `₹${(Number(updatedProduct.price) || 0).toLocaleString('en-IN')}`
     } : p);
     setProducts(nextProds);
-    localStorage.setItem('verdanta_products', JSON.stringify(nextProds));
-    broadcast({ type: 'PRODUCTS_UPDATED', products: nextProds });
-    showAdminToast(`Product updated successfully!`);
-
-    fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextProds)
-    }).catch(() => {});
+    syncManager.save('verdanta_products', nextProds, 'PRODUCTS_UPDATED', '/api/products', 'products');
+    showAdminToast(`Product "${updatedProduct.title || updatedProduct.name}" updated & synced live!`);
   };
 
   const deleteProduct = (productId) => {
     const target = products.find(p => p.id === productId);
     const nextProds = products.filter(p => p.id !== productId);
     setProducts(nextProds);
-    localStorage.setItem('verdanta_products', JSON.stringify(nextProds));
-    broadcast({ type: 'PRODUCTS_UPDATED', products: nextProds });
+    syncManager.save('verdanta_products', nextProds, 'PRODUCTS_UPDATED', '/api/products', 'products');
     showAdminToast(`Product "${target?.title || productId}" removed from catalog.`);
-
-    fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextProds)
-    }).catch(() => {});
   };
 
   const toggleProductStock = (productId) => {
@@ -231,14 +257,7 @@ export function AdminProvider({ children }) {
       return p;
     });
     setProducts(nextProds);
-    localStorage.setItem('verdanta_products', JSON.stringify(nextProds));
-    broadcast({ type: 'PRODUCTS_UPDATED', products: nextProds });
-
-    fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextProds)
-    }).catch(() => {});
+    syncManager.save('verdanta_products', nextProds, 'PRODUCTS_UPDATED', '/api/products', 'products');
   };
 
   // Category CRUD
@@ -250,29 +269,15 @@ export function AdminProvider({ children }) {
     };
     const nextCats = [...categories, cat];
     setCategories(nextCats);
-    localStorage.setItem('verdanta_categories', JSON.stringify(nextCats));
-    broadcast({ type: 'CATEGORIES_UPDATED', categories: nextCats });
-    showAdminToast(`Category "${cat.name}" added successfully!`);
-
-    fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextCats)
-    }).catch(() => {});
+    syncManager.save('verdanta_categories', nextCats, 'CATEGORIES_UPDATED', '/api/categories', 'categories');
+    showAdminToast(`Category "${cat.name}" added and synced live!`);
   };
 
   const updateCategory = (updatedCat) => {
     const nextCats = categories.map(c => c.id === updatedCat.id ? { ...c, ...updatedCat } : c);
     setCategories(nextCats);
-    localStorage.setItem('verdanta_categories', JSON.stringify(nextCats));
-    broadcast({ type: 'CATEGORIES_UPDATED', categories: nextCats });
-    showAdminToast(`Category "${updatedCat.name}" updated successfully!`);
-
-    fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextCats)
-    }).catch(() => {});
+    syncManager.save('verdanta_categories', nextCats, 'CATEGORIES_UPDATED', '/api/categories', 'categories');
+    showAdminToast(`Category "${updatedCat.name}" updated and synced live!`);
   };
 
   const deleteCategory = (catId) => {
@@ -282,15 +287,8 @@ export function AdminProvider({ children }) {
     }
     const nextCats = categories.filter(c => c.id !== catId);
     setCategories(nextCats);
-    localStorage.setItem('verdanta_categories', JSON.stringify(nextCats));
-    broadcast({ type: 'CATEGORIES_UPDATED', categories: nextCats });
+    syncManager.save('verdanta_categories', nextCats, 'CATEGORIES_UPDATED', '/api/categories', 'categories');
     showAdminToast(`Category removed.`);
-
-    fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextCats)
-    }).catch(() => {});
   };
 
   const addSubCategory = (catId, subName) => {
@@ -306,15 +304,8 @@ export function AdminProvider({ children }) {
       return c;
     });
     setCategories(nextCats);
-    localStorage.setItem('verdanta_categories', JSON.stringify(nextCats));
-    broadcast({ type: 'CATEGORIES_UPDATED', categories: nextCats });
-    showAdminToast(`Subtitle category "${cleanSub}" added!`);
-
-    fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextCats)
-    }).catch(() => {});
+    syncManager.save('verdanta_categories', nextCats, 'CATEGORIES_UPDATED', '/api/categories', 'categories');
+    showAdminToast(`Subtitle category "${cleanSub}" added and synced live!`);
   };
 
   const deleteSubCategory = (catId, subName) => {
@@ -329,113 +320,52 @@ export function AdminProvider({ children }) {
       return c;
     });
     setCategories(nextCats);
-    localStorage.setItem('verdanta_categories', JSON.stringify(nextCats));
-    broadcast({ type: 'CATEGORIES_UPDATED', categories: nextCats });
+    syncManager.save('verdanta_categories', nextCats, 'CATEGORIES_UPDATED', '/api/categories', 'categories');
     showAdminToast(`Subtitle category removed.`);
-
-    fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextCats)
-    }).catch(() => {});
   };
 
   // Proposal Status Update
   const updateProposalStatus = (id, newStatus) => {
     const nextProposals = proposals.map(p => p.id === id ? { ...p, status: newStatus } : p);
     setProposals(nextProposals);
-    localStorage.setItem('verdanta_proposals', JSON.stringify(nextProposals));
+    syncManager.save('verdanta_proposals', nextProposals, 'PROPOSALS_UPDATED', '/api/proposals', 'proposals');
     showAdminToast(`Inquiry #${id} marked as "${newStatus}"`);
+  };
+
+  // Order Status Update
+  const updateOrderStatus = (id, newStatus) => {
+    const nextOrders = orders.map(o => o.id === id ? { ...o, status: newStatus } : o);
+    setOrders(nextOrders);
+    syncManager.save('verdanta_orders', nextOrders, 'ORDERS_UPDATED', '/api/orders', 'orders');
+    showAdminToast(`Order #${id} marked as "${newStatus}"`);
   };
 
   // Hero Data Save
   const saveHeroData = (newHero) => {
-    setHeroData(newHero);
-    localStorage.setItem('verdanta_hero_data', JSON.stringify(newHero));
-    broadcast({ type: 'HERO_UPDATED', hero: newHero });
-    showAdminToast('Storefront Hero banner updated live!');
-
-    fetch('/api/hero', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newHero)
-    }).catch(() => {});
+    const updated = { ...heroData, ...newHero };
+    setHeroData(updated);
+    syncManager.save('verdanta_hero_data', updated, 'HERO_UPDATED', '/api/hero', 'hero');
+    showAdminToast('Storefront Hero banner saved & synced live!');
   };
 
   // Corporate Cards Save
   const saveCorporateCards = (newCards) => {
     setCorporateCards(newCards);
-    localStorage.setItem('verdanta_corporate_cards', JSON.stringify(newCards));
-    broadcast({ type: 'CORPORATE_CARDS_UPDATED', corporateCards: newCards });
-    showAdminToast('Corporate Gifting cards updated live!');
-
-    fetch('/api/corporate-cards', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newCards)
-    }).catch(() => {});
+    syncManager.save('verdanta_corporate_cards', newCards, 'CORPORATE_CARDS_UPDATED', '/api/corporate-cards', 'corporateCards');
+    showAdminToast('Corporate Gifting cards saved & synced live!');
   };
 
   // Config Save
   const saveConfig = (newConfig) => {
     const nextCfg = { ...config, ...newConfig };
     setConfig(nextCfg);
-    localStorage.setItem('verdanta_config', JSON.stringify(nextCfg));
-    broadcast({ type: 'CONFIG_UPDATED', config: nextCfg });
-    showAdminToast('System settings saved successfully!');
-
-    fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nextCfg)
-    }).catch(() => {});
+    syncManager.save('verdanta_config', nextCfg, 'CONFIG_UPDATED', '/api/config', 'config');
+    showAdminToast('System settings saved & synced live!');
   };
 
-  // Image Upload helper (supports Cloudinary or Data URL)
+  // Image Upload helper (supports auto-compression, Cloudinary, and Server API)
   const uploadImage = async (fileOrDataUrl) => {
-    if (!fileOrDataUrl) return '';
-    if (typeof fileOrDataUrl === 'string' && !fileOrDataUrl.startsWith('data:image')) {
-      return fileOrDataUrl;
-    }
-
-    // 1. Cloudinary check
-    const cloudName = (localStorage.getItem('verdanta_cloudinary_cloud_name') || '').trim();
-    const uploadPreset = (localStorage.getItem('verdanta_cloudinary_upload_preset') || '').trim();
-    if (cloudName && uploadPreset) {
-      try {
-        const formData = new FormData();
-        formData.append('file', fileOrDataUrl);
-        formData.append('upload_preset', uploadPreset);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-          method: 'POST',
-          body: formData
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.secure_url) {
-            return data.secure_url;
-          }
-        }
-      } catch (e) {
-        console.warn('Cloudinary upload error:', e);
-      }
-    }
-
-    // 2. Server API upload check
-    try {
-      const res = await fetch('/api/upload-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: fileOrDataUrl })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.url) return data.url;
-      }
-    } catch (e) {}
-
-    // Fallback: return data URL directly
-    return fileOrDataUrl;
+    return await uploadAndProcessImage(fileOrDataUrl);
   };
 
   const value = {
@@ -461,6 +391,7 @@ export function AdminProvider({ children }) {
     addSubCategory,
     deleteSubCategory,
     updateProposalStatus,
+    updateOrderStatus,
     saveHeroData,
     saveCorporateCards,
     saveConfig,

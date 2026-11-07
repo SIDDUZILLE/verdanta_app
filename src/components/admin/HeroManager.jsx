@@ -1,41 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 
 export default function HeroManager() {
   const { heroData, saveHeroData, uploadImage, showAdminToast } = useAdmin();
   const [formData, setFormData] = useState({ ...heroData });
+  const [isUploading, setIsUploading] = useState(false);
+  const debounceTimerRef = useRef(null);
+  const isInitialMount = useRef(true);
+
+  // Sync incoming context updates (e.g. from other tabs or remote updates)
+  useEffect(() => {
+    if (heroData) {
+      setFormData(prev => ({
+        ...prev,
+        ...heroData
+      }));
+    }
+  }, [heroData]);
+
+  // Debounced auto-save for text edits so typing is fluid but automatically saved and synced
+  const triggerAutoSave = (updatedData) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      saveHeroData(updatedData);
+    }, 400);
+  };
 
   const handleFieldChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const next = { ...prev, [field]: value };
+      triggerAutoSave(next);
+      return next;
+    });
   };
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsUploading(true);
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64 = event.target.result;
       try {
         const finalUrl = await uploadImage(base64);
-        setFormData(prev => ({ ...prev, image: finalUrl }));
-        showAdminToast('Hero photo uploaded!');
+        const updated = { ...formData, image: finalUrl };
+        setFormData(updated);
+        saveHeroData(updated);
+        showAdminToast('Hero photo uploaded & live synced to storefront!');
       } catch (err) {
-        setFormData(prev => ({ ...prev, image: base64 }));
+        const updated = { ...formData, image: base64 };
+        setFormData(updated);
+        saveHeroData(updated);
+      } finally {
+        setIsUploading(false);
       }
     };
     reader.readAsDataURL(file);
   };
 
   const handleResetPhoto = () => {
-    setFormData(prev => ({ ...prev, image: 'images/hero.jpg' }));
-    showAdminToast('Hero photo reset to default.');
+    const updated = { ...formData, image: 'images/hero.jpg' };
+    setFormData(updated);
+    saveHeroData(updated);
+    showAdminToast('Hero photo reset to default & live synced!');
   };
 
   const handleSave = (e) => {
     if (e) e.preventDefault();
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     saveHeroData(formData);
-    showAdminToast('Hero banner changes published live!');
+    showAdminToast('Hero banner changes saved & published live!');
   };
 
   const currentBg = formData.image || 'images/hero.jpg';
@@ -66,13 +103,24 @@ export default function HeroManager() {
             </h3>
             <span
               className="badge"
-              style={{ background: '#e8efe9', color: '#173b2c', fontWeight: 700, padding: '3px 10px', borderRadius: '12px', fontSize: '0.78rem' }}
+              style={{
+                background: '#e8f5e9',
+                color: '#2e7d32',
+                fontWeight: 700,
+                padding: '4px 12px',
+                borderRadius: '12px',
+                fontSize: '0.78rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
             >
-              Live Frontpage Display
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2e7d32', display: 'inline-block' }}></span>
+              Live Real-Time Sync Active
             </span>
           </div>
           <p style={{ color: '#666', margin: 0, fontSize: '0.92rem' }}>
-            Update the homepage hero background photo, headline, tagline, description, and call-to-action buttons. Any saved change syncs automatically to the live customer storefront in real-time.
+            Update the homepage hero background photo, headline, tagline, description, and call-to-action buttons. <strong>Every change is automatically saved and instantly reflected on the Customer Dashboard in real time.</strong>
           </p>
         </div>
 
@@ -105,8 +153,8 @@ export default function HeroManager() {
             <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
               <i className="fa-solid fa-eye"></i> Live Interactive Preview
             </span>
-            <span style={{ fontSize: '0.75rem', color: '#666', background: '#fff', border: '1px solid #e2dbcf', padding: '2px 8px', borderRadius: '6px' }}>
-              Real-Time Updates
+            <span style={{ fontSize: '0.75rem', color: '#2e7d32', background: '#e8f5e9', border: '1px solid #c8e6c9', padding: '2px 8px', borderRadius: '6px', fontWeight: 600 }}>
+              Instant Sync
             </span>
           </div>
 
@@ -169,18 +217,20 @@ export default function HeroManager() {
               </button>
             </div>
             <p style={{ fontSize: '0.82rem', color: '#666', margin: '0 0 12px 0' }}>
-              Upload a high-resolution interior/lifestyle photograph or specify a URL.
+              Upload a photograph or enter a path/URL. <em>Uploaded images are automatically optimized, saved, and synced immediately.</em>
             </p>
 
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <label
                 className="btn btn-primary btn-sm"
-                style={{ cursor: 'pointer', margin: 0, display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700, background: 'var(--color-gold)', borderColor: 'var(--color-gold)', color: '#fff' }}
+                style={{ cursor: isUploading ? 'not-allowed' : 'pointer', margin: 0, display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700, background: 'var(--color-gold)', borderColor: 'var(--color-gold)', color: '#fff' }}
               >
-                <i className="fa-solid fa-camera"></i> Replace Background Photo
+                <i className={`fa-solid ${isUploading ? 'fa-spinner fa-spin' : 'fa-camera'}`}></i>
+                {isUploading ? 'Uploading & Optimizing...' : 'Replace Background Photo'}
                 <input
                   type="file"
                   accept="image/*"
+                  disabled={isUploading}
                   style={{ display: 'none' }}
                   onChange={handlePhotoUpload}
                 />

@@ -3,6 +3,7 @@ import { useStore } from '../../context/StoreContext';
 
 export default function Navbar() {
   const {
+    categories = [],
     cartItemCount,
     wishlist,
     setIsCartOpen,
@@ -15,6 +16,23 @@ export default function Navbar() {
   } = useStore();
 
   const [mobileNavActive, setMobileNavActive] = useState(false);
+
+  // Filter categories by channel for dynamic navigation
+  const shopCategories = categories.filter(c => c.channel === 'shop' || (!c.channel && !c.id.includes('wholesale') && !c.id.includes('export') && c.id !== 'corporate-gifting'));
+  const corpCategory = categories.find(c => c.id === 'corporate-gifting' || c.channel === 'corporate');
+  const corpSubCategories = corpCategory?.subCategories && corpCategory.subCategories.length > 0
+    ? corpCategory.subCategories
+    : [
+      'Employee Welcome & Onboarding',
+      'Employee Recognition & Milestones',
+      'Festive & Celebration Gifting',
+      'Client, Partner & Executive Gifting',
+      'Sustainable & ESG Gifting',
+      'Curated & Custom Corporate Gift Sets'
+    ];
+
+  const wholesaleCategories = categories.filter(c => c.channel === 'wholesale' || c.id.startsWith('wholesale'));
+  const exportCategories = categories.filter(c => c.channel === 'export' || c.id.startsWith('export'));
 
   // Smooth scroll helper
   const handleNavScroll = (targetId, e) => {
@@ -159,7 +177,7 @@ export default function Navbar() {
               </a>
             </li>
 
-            {/* Dropdown for Shop Categories */}
+            {/* Dropdown for Shop Categories (Dynamic Real-Time Synced) */}
             <li className="has-dropdown shop-dropdown-item">
               <a
                 href="#categories"
@@ -170,152 +188,29 @@ export default function Navbar() {
               </a>
               <div className="mega-dropdown">
                 <div className="mega-dropdown-grid" id="shopMegaDropdownGrid">
-                  {/* Col 1 */}
-                  <div className="mega-col">
-                    <h4
-                      className="mega-title"
-                      style={{ cursor: 'pointer' }}
-                      onClick={(e) => handleCategoryClick('Artisan Gallery', null, e)}
-                    >
-                      1. ARTISAN GALLERY
-                    </h4>
-                    <ul className="mega-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Artisan Gallery', 'Lamps & Ambient Lighting', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Lamps &amp; Ambient Lighting
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Artisan Gallery', 'Terracotta & Clay Crafts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Terracotta &amp; Clay Crafts
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Artisan Gallery', 'Handwoven', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Handwoven
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Artisan Gallery', 'Cane crafts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Cane crafts
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Artisan Gallery', 'Artisan Décor', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Artisan Décor
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* Col 2 */}
-                  <div className="mega-col">
-                    <h4
-                      className="mega-title"
-                      style={{ cursor: 'pointer' }}
-                      onClick={(e) => handleCategoryClick('Wooden Crafts', null, e)}
-                    >
-                      2. WOODEN CRAFTS
-                    </h4>
-                    <ul className="mega-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Toys', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Toys
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Keychains & Mini Gifts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Keychains &amp; Mini Gifts
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Tea-Light Candles', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Tea-Light Candles
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Wooden Clocks', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Wooden Clocks
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wooden Crafts', 'Wooden Decor', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Wooden Decor
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* Col 3 */}
-                  <div className="mega-col">
-                    <h4
-                      className="mega-title"
-                      style={{ cursor: 'pointer' }}
-                      onClick={(e) => handleCategoryClick('Premium Home Décor', null, e)}
-                    >
-                      3. PREMIUM HOME DÉCOR
-                    </h4>
-                    <ul className="mega-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Table Décor', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Table Décor
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Wall Décor', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Wall Décor
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Traditional & Heritage Décor', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Traditional &amp; Heritage Décor
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Premium Home Décor', 'Sculptures & Figurines', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Sculptures &amp; Figurines
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* Col 4 - Return Gifting */}
-                  <div className="mega-col">
-                    <h4
-                      className="mega-title"
-                      style={{ cursor: 'pointer' }}
-                      onClick={(e) => handleCategoryClick('Return Gifting', null, e)}
-                    >
-                      4. RETURN GIFTING
-                    </h4>
-                    <ul className="mega-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Festive Gifts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Festive Gifts
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Birthday Gifts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Birthday Gifts
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Anniversary Gifting', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Anniversary Gifting
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'House Warming', e)}>
-                          <i className="fa-solid fa-angle-right"></i> House Warming
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Return Gifting', 'Wedding Gifts', e)}>
-                          <i className="fa-solid fa-angle-right"></i> Wedding Gifts
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
+                  {shopCategories.map((cat, idx) => (
+                    <div className="mega-col" key={cat.id}>
+                      <h4
+                        className="mega-title"
+                        style={{ cursor: 'pointer' }}
+                        onClick={(e) => handleCategoryClick(cat.name, null, e)}
+                      >
+                        {cat.displayName || `${idx + 1}. ${cat.name.toUpperCase()}`}
+                      </h4>
+                      <ul className="mega-list">
+                        {(cat.subCategories || []).map((sub, sIdx) => (
+                          <li key={sIdx}>
+                            <a
+                              href="#categories"
+                              onClick={(e) => handleCategoryClick(cat.name, sub, e)}
+                            >
+                              <i className="fa-solid fa-angle-right"></i> {sub}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Mega Dropdown Footer */}
@@ -335,7 +230,7 @@ export default function Navbar() {
               </div>
             </li>
 
-            {/* Dropdown for Corporate Gifting */}
+            {/* Dropdown for Corporate Gifting (Dynamic Real-Time Synced) */}
             <li className="has-dropdown corporate-dropdown-item">
               <a
                 href="#corporate"
@@ -346,41 +241,18 @@ export default function Navbar() {
               </a>
               <div className="corporate-menu-dropdown">
                 <ul className="corporate-menu-list">
-                  <li>
-                    <a href="#corporate" onClick={(e) => handleCorporateClick('Employee Welcome & Onboarding', e)}>
-                      1. EMPLOYEE WELCOME &amp; ONBOARDING
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#corporate" onClick={(e) => handleCorporateClick('Employee Recognition & Milestones', e)}>
-                      2. EMPLOYEE RECOGNITION &amp; MILESTONES
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#corporate" onClick={(e) => handleCorporateClick('Festive & Celebration Gifting', e)}>
-                      3. FESTIVE &amp; CELEBRATION GIFTING
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#corporate" onClick={(e) => handleCorporateClick('Client, Partner & Executive Gifting', e)}>
-                      4. CLIENT, PARTNER &amp; EXECUTIVE GIFTING
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#corporate" onClick={(e) => handleCorporateClick('Sustainable & ESG Gifting', e)}>
-                      5. SUSTAINABLE &amp; ESG GIFTING
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#corporate" onClick={(e) => handleCorporateClick('Curated & Custom Corporate Gift Sets', e)}>
-                      6. CURATED &amp; CUSTOM CORPORATE GIFT SETS
-                    </a>
-                  </li>
+                  {corpSubCategories.map((sub, idx) => (
+                    <li key={idx}>
+                      <a href="#corporate" onClick={(e) => handleCorporateClick(sub, e)}>
+                        {idx + 1}. {sub.toUpperCase()}
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </li>
 
-            {/* Dropdown for Wholesale */}
+            {/* Dropdown for Wholesale (Dynamic Real-Time Synced) */}
             <li className="has-dropdown wholesale-dropdown-item">
               <a
                 href="#categories"
@@ -391,79 +263,36 @@ export default function Navbar() {
               </a>
               <div className="split-menu-dropdown wholesale-menu-dropdown">
                 <div className="split-menu-grid" id="wholesaleDropdownGrid">
-                  <div className="split-menu-col">
-                    <h4 className="split-menu-header">
-                      <a href="#categories" className="split-header-link" onClick={(e) => handleCategoryClick('Wholesale Wood Crafts', null, e)}>
-                        WOOD
-                      </a>
-                    </h4>
-                    <ul className="split-menu-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Wood Crafts', 'Elephant', e)}>
-                          1. Elephant
+                  {wholesaleCategories.map(cat => (
+                    <div className="split-menu-col" key={cat.id}>
+                      <h4 className="split-menu-header">
+                        <a
+                          href="#categories"
+                          className="split-header-link"
+                          onClick={(e) => handleCategoryClick(cat.name, null, e)}
+                        >
+                          {cat.name.replace(/wholesale\s*/i, '').toUpperCase()}
                         </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Wood Crafts', 'Buddha', e)}>
-                          2. Buddha
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Wood Crafts', 'Tea-Light Holders', e)}>
-                          3. Tea-Light Holders
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Wood Crafts', 'Traditional Toys & Figurines', e)}>
-                          4. Traditional Toys &amp; Figurines
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Wood Crafts', 'Decorative Boxes & Trays', e)}>
-                          5. Decorative Boxes &amp; Trays
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="split-menu-col">
-                    <h4 className="split-menu-header">
-                      <a href="#categories" className="split-header-link" onClick={(e) => handleCategoryClick('Wholesale Metal Crafts', null, e)}>
-                        METAL
-                      </a>
-                    </h4>
-                    <ul className="split-menu-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Metal Crafts', 'Radha Krishna', e)}>
-                          1. Radha Krishna
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Metal Crafts', 'Buddha', e)}>
-                          2. Buddha
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Metal Crafts', 'Musician Sets', e)}>
-                          3. Musician Sets
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Metal Crafts', 'Elephant & Animal', e)}>
-                          4. Elephant &amp; Animal
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Wholesale Metal Crafts', 'Artistic Wall Décor', e)}>
-                          5. Artistic Wall Décor
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
+                      </h4>
+                      <ul className="split-menu-list">
+                        {(cat.subCategories || []).map((sub, sIdx) => (
+                          <li key={sIdx}>
+                            <a
+                              href="#categories"
+                              onClick={(e) => handleCategoryClick(cat.name, sub, e)}
+                            >
+                              {sIdx + 1}. {sub}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               </div>
             </li>
 
-            {/* Dropdown for Export */}
+            {/* Dropdown for Export (Dynamic Real-Time Synced) */}
             <li className="has-dropdown export-dropdown-item">
               <a
                 href="#categories"
@@ -474,69 +303,31 @@ export default function Navbar() {
               </a>
               <div className="split-menu-dropdown export-menu-dropdown">
                 <div className="split-menu-grid" id="exportDropdownGrid">
-                  <div className="split-menu-col">
-                    <h4 className="split-menu-header">
-                      <a href="#categories" className="split-header-link" onClick={(e) => handleCategoryClick('Export Wood Crafts', null, e)}>
-                        WOOD
-                      </a>
-                    </h4>
-                    <ul className="split-menu-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Wood Crafts', 'Wooden Decorative Trays', e)}>
-                          1. Wooden Decorative Trays
+                  {exportCategories.map(cat => (
+                    <div className="split-menu-col" key={cat.id}>
+                      <h4 className="split-menu-header">
+                        <a
+                          href="#categories"
+                          className="split-header-link"
+                          onClick={(e) => handleCategoryClick(cat.name, null, e)}
+                        >
+                          {cat.name.replace(/export\s*/i, '').toUpperCase()}
                         </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Wood Crafts', 'Wooden Boxes & Organisers', e)}>
-                          2. Wooden Boxes &amp; Organisers
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Wood Crafts', 'Wooden Tea-Light Holders', e)}>
-                          3. Wooden Tea-Light Holders
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Wood Crafts', 'Figurines & Sculptural Décor', e)}>
-                          4. Figurines &amp; Sculptural Décor
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Wood Crafts', 'Traditional Toys & Play Objects', e)}>
-                          5. Traditional Toys &amp; Play Objects
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="split-menu-col">
-                    <h4 className="split-menu-header">
-                      <a href="#categories" className="split-header-link" onClick={(e) => handleCategoryClick('Export Metal Crafts', null, e)}>
-                        METAL
-                      </a>
-                    </h4>
-                    <ul className="split-menu-list">
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Metal Crafts', 'Metal Sculptural Figurines', e)}>
-                          1. Metal Sculptural Figurines
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Metal Crafts', 'Metal Table & Wall Décor', e)}>
-                          2. Metal Table &amp; Wall Décor
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Metal Crafts', 'Candle / Tea-Light Holders', e)}>
-                          3. Candle / Tea-Light Holders
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#categories" onClick={(e) => handleCategoryClick('Export Metal Crafts', 'Indian Musician Sets', e)}>
-                          4. Indian Musician Sets
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
+                      </h4>
+                      <ul className="split-menu-list">
+                        {(cat.subCategories || []).map((sub, sIdx) => (
+                          <li key={sIdx}>
+                            <a
+                              href="#categories"
+                              onClick={(e) => handleCategoryClick(cat.name, sub, e)}
+                            >
+                              {sIdx + 1}. {sub}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               </div>
             </li>
@@ -565,9 +356,9 @@ export default function Navbar() {
               <a
                 href="#visit-us"
                 className="nav-link"
-                onClick={(e) => handleVisitClick(e)}
+                onClick={(e) => handleNavScroll('visit-us', e)}
               >
-                ATELIER VISIT
+                VISIT SHOWROOM
               </a>
             </li>
 

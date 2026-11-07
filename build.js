@@ -3,11 +3,14 @@
  * Runs all validation, asset integrity checks, and prepares project for deployment.
  */
 
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import vm from 'vm';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const rootDir = __dirname;
 let hasError = false;
 
@@ -49,6 +52,7 @@ const jsonFiles = [
   'hero.json',
   'corporate_cards.json',
   'proposals.json',
+  'orders.json',
   'config.json',
   'vercel.json'
 ];

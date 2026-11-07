@@ -4,6 +4,16 @@ import { useStore } from '../../context/StoreContext';
 export default function ShowroomSection() {
   const { setIsVisitModalOpen, whatsappNumber } = useStore();
 
+  const formatPhone = (num) => {
+    const s = String(num || '918867688699').replace(/\D/g, '');
+    if (s.length === 12 && s.startsWith('91')) {
+      return `+91 ${s.slice(2, 7)} ${s.slice(7)}`;
+    }
+    return `+${s}`;
+  };
+
+  const formattedPhone = formatPhone(whatsappNumber);
+
   return (
     <section className="showroom-section" id="visit-us" style={{ backgroundImage: "url('images/showroom-store.jpg')" }}>
       <div className="showroom-overlay"></div>
@@ -53,7 +63,7 @@ export default function ShowroomSection() {
                       rel="noopener noreferrer"
                       style={{ color: 'inherit', textDecoration: 'none' }}
                     >
-                      +91 88676 88699
+                      {formattedPhone}
                     </a>
                   </span>
                 </div>

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { normalizeCategoryId } from '../utils/formatters';
+import { syncManager } from '../utils/syncManager';
 
 const StoreContext = createContext(null);
 
@@ -180,10 +181,51 @@ export const DEFAULT_HERO_DATA = {
 };
 
 export function StoreProvider({ children }) {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-  const [heroData, setHeroData] = useState(DEFAULT_HERO_DATA);
-  const [corporateCards, setCorporateCards] = useState([]);
+  // 1. Initial State from localStorage (preserves all Admin modifications)
+  const [products, setProducts] = useState(() => {
+    try {
+      const stored = localStorage.getItem('verdanta_products');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) { }
+    return [];
+  });
+
+  const [categories, setCategories] = useState(() => {
+    try {
+      const stored = localStorage.getItem('verdanta_categories');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) { }
+    return DEFAULT_CATEGORIES;
+  });
+
+  const [heroData, setHeroData] = useState(() => {
+    try {
+      const stored = localStorage.getItem('verdanta_hero_data');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') return { ...DEFAULT_HERO_DATA, ...parsed };
+      }
+    } catch (e) { }
+    return DEFAULT_HERO_DATA;
+  });
+
+  const [corporateCards, setCorporateCards] = useState(() => {
+    try {
+      const stored = localStorage.getItem('verdanta_corporate_cards');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) { }
+    return [];
+  });
+
   const [contactEmail, setContactEmail] = useState(() => {
     try {
       const stored = localStorage.getItem('verdanta_config');
@@ -191,9 +233,10 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (parsed.contact_email) return parsed.contact_email;
       }
-    } catch (e) {}
+    } catch (e) { }
     return 'info@verdantaworld.com';
   });
+
   const [whatsappNumber, setWhatsappNumber] = useState(() => {
     try {
       const stored = localStorage.getItem('verdanta_config');
@@ -201,7 +244,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (parsed.whatsapp_number) return String(parsed.whatsapp_number).replace(/\D/g, '');
       }
-    } catch (e) {}
+    } catch (e) { }
     return '918867688699';
   });
 
@@ -259,105 +302,135 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     try {
       localStorage.setItem('verdanta_cart', JSON.stringify(cart));
-    } catch (e) {}
+    } catch (e) { }
   }, [cart]);
 
   // Save Wishlist to LocalStorage
   useEffect(() => {
     try {
       localStorage.setItem('verdanta_wishlist', JSON.stringify(wishlist));
-    } catch (e) {}
+    } catch (e) { }
   }, [wishlist]);
 
-  // Initial Load from JSON / localStorage / API
+  // Initial Load: Only fetch if localStorage is truly empty (never overwrite admin changes)
   useEffect(() => {
-    // 1. Load cached products first for instant rendering
-    const cachedProducts = localStorage.getItem('verdanta_products');
-    if (cachedProducts) {
-      try {
-        const parsed = JSON.parse(cachedProducts);
-        if (Array.isArray(parsed) && parsed.length > 0) setProducts(parsed);
-      } catch (e) {}
+    // 1. Products
+    const hasCachedProducts = products.length > 0;
+    if (!hasCachedProducts) {
+      fetch('/api/products')
+        .then(res => res.ok ? res.json() : fetch('/products.json').then(r => r.json()))
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setProducts(data);
+            try {
+              localStorage.setItem('verdanta_products', JSON.stringify(data));
+              localStorage.setItem('verdanta_products_timestamp', String(Date.now()));
+            } catch (e) { }
+          }
+        })
+        .catch(() => {
+          fetch('/products.json')
+            .then(res => res.json())
+            .then(data => {
+              if (Array.isArray(data) && data.length > 0) {
+                setProducts(data);
+                localStorage.setItem('verdanta_products', JSON.stringify(data));
+              }
+            })
+            .catch(() => { });
+        });
     }
-
-    // Always fetch fresh products.json to ensure all 141+ products and images are loaded
-    fetch('/products.json')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
-          try {
-            localStorage.setItem('verdanta_products', JSON.stringify(data));
-          } catch (e) {}
-        }
-      })
-      .catch(err => console.warn('Could not load products.json:', err));
 
     // 2. Categories
     const cachedCats = localStorage.getItem('verdanta_categories');
-    if (cachedCats) {
-      try {
-        const parsed = JSON.parse(cachedCats);
-        if (Array.isArray(parsed) && parsed.length > 0) setCategories(parsed);
-      } catch (e) {}
-    }
-
-    fetch('/categories.json')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setCategories(data);
-          try {
+    if (!cachedCats) {
+      fetch('/api/categories')
+        .then(res => res.ok ? res.json() : fetch('/categories.json').then(r => r.json()))
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCategories(data);
             localStorage.setItem('verdanta_categories', JSON.stringify(data));
-          } catch (e) {}
-        }
-      })
-      .catch(() => {});
-
+          }
+        })
+        .catch(() => { });
+    }
 
     // 3. Hero Data
     const cachedHero = localStorage.getItem('verdanta_hero_data');
-    if (cachedHero) {
-      try {
-        const parsed = JSON.parse(cachedHero);
-        if (parsed && typeof parsed === 'object') setHeroData(parsed);
-      } catch (e) {}
-    } else {
-      fetch('/hero.json')
-        .then(res => res.json())
+    if (!cachedHero) {
+      fetch('/api/hero')
+        .then(res => res.ok ? res.json() : fetch('/hero.json').then(r => r.json()))
         .then(data => {
           if (data && typeof data === 'object') {
-            setHeroData({ ...DEFAULT_HERO_DATA, ...data });
+            setHeroData(prev => ({ ...prev, ...data }));
             localStorage.setItem('verdanta_hero_data', JSON.stringify(data));
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
 
     // 4. Corporate Cards
     const cachedCorp = localStorage.getItem('verdanta_corporate_cards');
-    if (cachedCorp) {
-      try {
-        const parsed = JSON.parse(cachedCorp);
-        if (Array.isArray(parsed) && parsed.length > 0) setCorporateCards(parsed);
-      } catch (e) {}
-    }
-    fetch('/corporate_cards.json')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setCorporateCards(prev => prev.length > 0 ? prev : data);
-          if (!cachedCorp) {
+    if (!cachedCorp || corporateCards.length === 0) {
+      fetch('/api/corporate-cards')
+        .then(res => res.ok ? res.json() : fetch('/corporate_cards.json').then(r => r.json()))
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCorporateCards(data);
             localStorage.setItem('verdanta_corporate_cards', JSON.stringify(data));
           }
-        }
-      })
-      .catch(() => {});
+        })
+        .catch(() => { });
+    }
 
     // 5. Config (WhatsApp Number & Contact Email)
-    fetch('/config.json')
-      .then(res => res.json())
-      .then(cfg => {
+    const cachedConfig = localStorage.getItem('verdanta_config');
+    if (!cachedConfig) {
+      fetch('/api/config')
+        .then(res => res.ok ? res.json() : fetch('/config.json').then(r => r.json()))
+        .then(cfg => {
+          if (cfg) {
+            if (cfg.whatsapp_number) {
+              setWhatsappNumber(String(cfg.whatsapp_number).replace(/\D/g, ''));
+            }
+            if (cfg.contact_email) {
+              setContactEmail(cfg.contact_email);
+            }
+            localStorage.setItem('verdanta_config', JSON.stringify(cfg));
+          }
+        })
+        .catch(() => { });
+    }
+  }, []);
+
+  // Real-Time Synchronization Subscription (Same-Tab + Cross-Tab)
+  useEffect(() => {
+    const unsubscribe = syncManager.subscribe((event) => {
+      const { type } = event;
+
+      if (type === 'PRODUCTS_UPDATED') {
+        const next = event.products || event.data;
+        if (Array.isArray(next)) {
+          setProducts(next);
+          showToast('Store catalog updated live from Admin!');
+        }
+      } else if (type === 'CATEGORIES_UPDATED') {
+        const next = event.categories || event.data;
+        if (Array.isArray(next)) {
+          setCategories(next);
+        }
+      } else if (type === 'HERO_UPDATED') {
+        const next = event.hero || event.data;
+        if (next && typeof next === 'object') {
+          setHeroData(prev => ({ ...prev, ...next }));
+        }
+      } else if (type === 'CORPORATE_CARDS_UPDATED') {
+        const next = event.corporateCards || event.data;
+        if (Array.isArray(next)) {
+          setCorporateCards(next);
+        }
+      } else if (type === 'CONFIG_UPDATED') {
+        const cfg = event.config || event.data;
         if (cfg) {
           if (cfg.whatsapp_number) {
             setWhatsappNumber(String(cfg.whatsapp_number).replace(/\D/g, ''));
@@ -366,40 +439,69 @@ export function StoreProvider({ children }) {
             setContactEmail(cfg.contact_email);
           }
         }
-      })
-      .catch(() => {});
-  }, []);
+      }
+    });
 
-  // BroadcastChannel for Live Sync across tabs
-  useEffect(() => {
-    let bc = null;
-    if (typeof BroadcastChannel !== 'undefined') {
-      bc = new BroadcastChannel('verdanta_store_channel');
-      bc.onmessage = (event) => {
-        const { type, products: updatedProds, hero, corporateCards: updatedCorp, categories: updatedCats } = event.data || {};
-        if (type === 'PRODUCTS_UPDATED' && Array.isArray(updatedProds)) {
-          setProducts(updatedProds);
-          showToast('Store catalog updated live from Admin!');
-        } else if (type === 'HERO_UPDATED' && hero) {
-          setHeroData(hero);
-        } else if (type === 'CORPORATE_CARDS_UPDATED' && Array.isArray(updatedCorp)) {
-          setCorporateCards(updatedCorp);
-        } else if (type === 'CATEGORIES_UPDATED' && Array.isArray(updatedCats)) {
-          setCategories(updatedCats);
-        } else if (type === 'CONFIG_UPDATED' && event.data.config) {
-          if (event.data.config.whatsapp_number) {
-            setWhatsappNumber(String(event.data.config.whatsapp_number).replace(/\D/g, ''));
-          }
-          if (event.data.config.contact_email) {
-            setContactEmail(event.data.config.contact_email);
-          }
-        }
-      };
-    }
     return () => {
-      if (bc) bc.close();
+      unsubscribe();
     };
   }, [showToast]);
+
+  // Background Multi-Device Server Sync (heartbeat check)
+  useEffect(() => {
+    const stopBackgroundSync = syncManager.startBackgroundSync((serverStatus) => {
+      // Re-fetch any updated endpoints
+      fetch('/api/products')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setProducts(data);
+            localStorage.setItem('verdanta_products', JSON.stringify(data));
+          }
+        }).catch(() => { });
+
+      fetch('/api/categories')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCategories(data);
+            localStorage.setItem('verdanta_categories', JSON.stringify(data));
+          }
+        }).catch(() => { });
+
+      fetch('/api/hero')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && typeof data === 'object') {
+            setHeroData(prev => ({ ...prev, ...data }));
+            localStorage.setItem('verdanta_hero_data', JSON.stringify(data));
+          }
+        }).catch(() => { });
+
+      fetch('/api/corporate-cards')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCorporateCards(data);
+            localStorage.setItem('verdanta_corporate_cards', JSON.stringify(data));
+          }
+        }).catch(() => { });
+
+      fetch('/api/config')
+        .then(r => r.ok ? r.json() : null)
+        .then(cfg => {
+          if (cfg) {
+            if (cfg.whatsapp_number) setWhatsappNumber(String(cfg.whatsapp_number).replace(/\D/g, ''));
+            if (cfg.contact_email) setContactEmail(cfg.contact_email);
+            localStorage.setItem('verdanta_config', JSON.stringify(cfg));
+          }
+        }).catch(() => { });
+    }, 3500);
+
+    return () => {
+      if (stopBackgroundSync) stopBackgroundSync();
+    };
+  }, []);
 
   // Cart Operations
   const addToCart = useCallback((product, qty = 1) => {

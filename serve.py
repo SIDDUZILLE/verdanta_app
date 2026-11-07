@@ -25,6 +25,7 @@ PROPOSALS_FILE = os.path.join(BASE_DIR, 'proposals.json')
 CORPORATE_CARDS_FILE = os.path.join(BASE_DIR, 'corporate_cards.json')
 HERO_FILE = os.path.join(BASE_DIR, 'hero.json')
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
+ORDERS_FILE = os.path.join(BASE_DIR, 'orders.json')
 
 DEFAULT_HERO_DATA = {
     "eyebrow": "ARTISANAL EXCELLENCE • DIRECT FROM INDIA",
@@ -154,6 +155,43 @@ class CustomAPIRequestHandler(http.server.SimpleHTTPRequestHandler):
         if is_admin and (path == '/' or path == ''):
             self.path = '/admin.html'
             return super().do_GET()
+
+        if path == '/api/sync-status':
+            timestamps = {}
+            for name, fpath in [
+                ("products", PRODUCTS_FILE),
+                ("categories", CATEGORIES_FILE),
+                ("hero", HERO_FILE),
+                ("corporate_cards", CORPORATE_CARDS_FILE),
+                ("config", CONFIG_FILE),
+                ("proposals", PROPOSALS_FILE),
+                ("orders", ORDERS_FILE)
+            ]:
+                if os.path.exists(fpath):
+                    timestamps[name] = os.path.getmtime(fpath) * 1000
+                else:
+                    timestamps[name] = 0
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "online", "timestamps": timestamps}).encode('utf-8'))
+            return
+
+        if path == '/api/orders':
+            orders = []
+            if os.path.exists(ORDERS_FILE):
+                try:
+                    with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
+                        orders = json.load(f)
+                except Exception:
+                    orders = []
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(json.dumps(orders, ensure_ascii=False).encode('utf-8'))
+            return
 
         if path == '/api/db-status':
             db = get_mongo_db()
@@ -453,6 +491,40 @@ class CustomAPIRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
             return
+
+        if path == '/api/orders':
+            try:
+                orders = json.loads(body.decode('utf-8'))
+                if isinstance(orders, list):
+                    with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(orders, f, indent=2, ensure_ascii=False)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"success": True, "count": len(orders)}).encode('utf-8'))
+                    return
+                elif isinstance(orders, dict):
+                    existing = []
+                    if os.path.exists(ORDERS_FILE):
+                        try:
+                            with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
+                                existing = json.load(f)
+                        except Exception:
+                            existing = []
+                    existing.insert(0, orders)
+                    with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(existing, f, indent=2, ensure_ascii=False)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"success": True, "saved": orders}).encode('utf-8'))
+                    return
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
+                return
 
         if path == '/api/upload-image':
             try:

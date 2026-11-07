@@ -3,7 +3,7 @@ import { useAdmin } from '../../context/AdminContext';
 import { formatPrice } from '../../utils/formatters';
 
 export default function OrdersManager() {
-  const { orders } = useAdmin();
+  const { orders, updateOrderStatus } = useAdmin();
 
   return (
     <section className="tab-pane active" id="tab-orders">
@@ -11,7 +11,7 @@ export default function OrdersManager() {
         {orders.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: '#888' }}>
             <i className="fa-solid fa-bag-shopping" style={{ fontSize: '2.5rem', color: '#ddd', marginBottom: '12px', display: 'inline-block' }}></i>
-            <p>No customer orders placed yet. Orders placed through WhatsApp &amp; Checkout will appear here.</p>
+            <p>No customer orders placed yet. Orders placed through WhatsApp &amp; Checkout will appear here live in real time.</p>
           </div>
         ) : (
           <table className="admin-table">
@@ -23,7 +23,7 @@ export default function OrdersManager() {
                 <th>Items Ordered</th>
                 <th>Order Total</th>
                 <th>Fulfillment Status</th>
-                <th width="100" style={{ textAlign: 'right' }}>Action</th>
+                <th width="140" style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -48,15 +48,31 @@ export default function OrdersManager() {
                   </td>
                   <td><strong style={{ color: 'var(--color-primary)' }}>{formatPrice(o.total || 0)}</strong></td>
                   <td>
-                    <span className="badge" style={{ background: '#dcfce7', color: '#166534', padding: '3px 8px', borderRadius: '4px', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {o.status || 'Received'}
-                    </span>
+                    <select
+                      value={o.status || 'Confirmed'}
+                      onChange={(e) => updateOrderStatus && updateOrderStatus(o.id, e.target.value)}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        borderRadius: '4px',
+                        border: '1px solid #d1d5db',
+                        background: o.status === 'Delivered' ? '#dcfce7' : o.status === 'Cancelled' ? '#fee2e2' : '#fef3c7',
+                        color: o.status === 'Delivered' ? '#166534' : o.status === 'Cancelled' ? '#991b1b' : '#92400e'
+                      }}
+                    >
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Dispatched">Dispatched</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <button
                       type="button"
                       className="btn btn-sm btn-outline"
-                      onClick={() => alert(`Order details for #${o.id}\nCustomer: ${o.customerName || 'N/A'}\nTotal: ₹${o.total || 0}`)}
+                      onClick={() => alert(`Order details for #${o.id}\nCustomer: ${o.customerName || 'N/A'}\nTotal: ₹${o.total || 0}\nStatus: ${o.status || 'Confirmed'}`)}
                       style={{ padding: '5px 10px', fontSize: '0.8rem', background: '#fff' }}
                     >
                       <i className="fa-solid fa-eye"></i> View

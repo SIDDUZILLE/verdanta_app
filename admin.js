@@ -304,7 +304,7 @@ function saveCategories() {
     localStorage.setItem('verdanta_cat_sync_trigger', String(Date.now()));
     window.dispatchEvent(new Event('storage'));
     if (storeBroadcastChannel) {
-      storeBroadcastChannel.postMessage({ type: 'CATEGORIES_UPDATED', timestamp: Date.now() });
+      storeBroadcastChannel.postMessage({ type: 'CATEGORIES_UPDATED', categories: PRODUCT_CATEGORIES, timestamp: Date.now() });
     }
   } catch (e) { }
 }
@@ -948,7 +948,7 @@ function saveProducts() {
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new CustomEvent('verdanta-products-updated', { detail: adminProducts }));
     if (storeBroadcastChannel) {
-      storeBroadcastChannel.postMessage({ type: 'PRODUCTS_UPDATED', timestamp: Date.now() });
+      storeBroadcastChannel.postMessage({ type: 'PRODUCTS_UPDATED', products: adminProducts, timestamp: Date.now() });
     }
   } catch (e) { }
 }
@@ -973,7 +973,7 @@ function saveProposals() {
   try {
     localStorage.setItem('verdanta_sync_trigger', String(Date.now()));
     if (storeBroadcastChannel) {
-      storeBroadcastChannel.postMessage({ type: 'PROPOSALS_UPDATED', timestamp: Date.now() });
+      storeBroadcastChannel.postMessage({ type: 'PROPOSALS_UPDATED', proposals: adminProposals, timestamp: Date.now() });
     }
   } catch (e) { }
 }
@@ -981,6 +981,9 @@ function saveProposals() {
 function saveOrders() {
   localStorage.setItem('verdanta_orders', JSON.stringify(adminOrders));
   updateSidebarCounts();
+  if (storeBroadcastChannel) {
+    storeBroadcastChannel.postMessage({ type: 'ORDERS_UPDATED', orders: adminOrders, timestamp: Date.now() });
+  }
 }
 
 // =============================================================================

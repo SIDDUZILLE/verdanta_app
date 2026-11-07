@@ -21,6 +21,7 @@ $categoriesFile = $baseDir . '/categories.json';
 $proposalsFile = $baseDir . '/proposals.json';
 $corporateCardsFile = $baseDir . '/corporate_cards.json';
 $heroFile = $baseDir . '/hero.json';
+$ordersFile = $baseDir . '/orders.json';
 
 if (!file_exists($uploadsDir)) {
     mkdir($uploadsDir, 0755, true);
@@ -36,11 +37,51 @@ if (!$action) {
     else if (strpos($uri, 'corporate-cards') !== false) $action = 'corporate-cards';
     else if (strpos($uri, 'hero') !== false) $action = 'hero';
     else if (strpos($uri, 'proposals') !== false || strpos($uri, 'enquiries') !== false) $action = 'proposals';
+    else if (strpos($uri, 'orders') !== false) $action = 'orders';
     else if (strpos($uri, 'config') !== false) $action = 'config';
+    else if (strpos($uri, 'sync-status') !== false) $action = 'sync-status';
     else if (strpos($uri, 'status') !== false) $action = 'status';
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
+
+if ($action === 'sync-status') {
+    header('Content-Type: application/json; charset=utf-8');
+    $timestamps = [
+        'products' => file_exists($productsFile) ? filemtime($productsFile) * 1000 : 0,
+        'categories' => file_exists($categoriesFile) ? filemtime($categoriesFile) * 1000 : 0,
+        'hero' => file_exists($heroFile) ? filemtime($heroFile) * 1000 : 0,
+        'corporate_cards' => file_exists($corporateCardsFile) ? filemtime($corporateCardsFile) * 1000 : 0,
+        'config' => file_exists($baseDir . '/config.json') ? filemtime($baseDir . '/config.json') * 1000 : 0,
+        'proposals' => file_exists($proposalsFile) ? filemtime($proposalsFile) * 1000 : 0,
+        'orders' => file_exists($ordersFile) ? filemtime($ordersFile) * 1000 : 0
+    ];
+    echo json_encode(['status' => 'online', 'timestamps' => $timestamps]);
+    exit();
+}
+
+if ($action === 'orders') {
+    header('Content-Type: application/json; charset=utf-8');
+    if ($method === 'GET') {
+        if (file_exists($ordersFile)) {
+            readfile($ordersFile);
+        } else {
+            echo '[]';
+        }
+        exit();
+    } else if ($method === 'POST') {
+        $raw = file_get_contents('php://input');
+        $payload = json_decode($raw, true);
+        if (is_array($payload)) {
+            file_put_contents($ordersFile, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            echo json_encode(['success' => true, 'orders' => $payload]);
+        } else {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid order JSON']);
+        }
+        exit();
+    }
+}
 
 if ($action === 'status') {
     header('Content-Type: application/json; charset=utf-8');

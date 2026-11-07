@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 
 export default function SettingsManager() {
-  const { config, saveConfig } = useAdmin();
+  const { config, saveConfig, showAdminToast } = useAdmin();
 
   const [formData, setFormData] = useState({
     whatsapp_number: config.whatsapp_number || '918867688699',
@@ -12,7 +12,16 @@ export default function SettingsManager() {
     mongodb_uri: config.mongodb_uri || ''
   });
 
-  React.useEffect(() => {
+  const [cloudinaryName, setCloudinaryName] = useState(
+    () => localStorage.getItem('verdanta_cloudinary_cloud_name') || ''
+  );
+  const [cloudinaryPreset, setCloudinaryPreset] = useState(
+    () => localStorage.getItem('verdanta_cloudinary_upload_preset') || ''
+  );
+
+  const debounceTimerRef = useRef(null);
+
+  useEffect(() => {
     if (config) {
       setFormData(prev => ({
         ...prev,
@@ -25,31 +34,59 @@ export default function SettingsManager() {
     }
   }, [config]);
 
-  const [cloudinaryName, setCloudinaryName] = useState(
-    localStorage.getItem('verdanta_cloudinary_cloud_name') || ''
-  );
-  const [cloudinaryPreset, setCloudinaryPreset] = useState(
-    localStorage.getItem('verdanta_cloudinary_upload_preset') || ''
-  );
+  const triggerAutoSave = (updatedData) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      saveConfig(updatedData);
+    }, 500);
+  };
+
+  const handleFieldChange = (field, value) => {
+    setFormData(prev => {
+      const next = { ...prev, [field]: value };
+      triggerAutoSave(next);
+      return next;
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     saveConfig(formData);
 
     // Save Cloudinary settings to localStorage
     localStorage.setItem('verdanta_cloudinary_cloud_name', cloudinaryName.trim());
     localStorage.setItem('verdanta_cloudinary_upload_preset', cloudinaryPreset.trim());
 
-    alert('Settings saved successfully!');
+    showAdminToast('Settings saved & synced live to customer storefront!');
   };
 
   return (
     <div className="admin-section-card">
-      <div className="admin-section-header">
+      <div className="admin-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h3>Store & Platform Settings</h3>
-          <p>Configure WhatsApp order recipient, admin security, database credentials, and Cloudinary storage.</p>
+          <h3>Store &amp; Platform Settings</h3>
+          <p>Configure WhatsApp order recipient, admin security, official contact email, and Cloudinary storage.</p>
         </div>
+        <span
+          className="badge"
+          style={{
+            background: '#e8f5e9',
+            color: '#2e7d32',
+            fontWeight: 700,
+            padding: '4px 12px',
+            borderRadius: '12px',
+            fontSize: '0.78rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2e7d32', display: 'inline-block' }}></span>
+          Live Real-Time Sync Active
+        </span>
       </div>
 
       <form onSubmit={handleSubmit} className="admin-settings-form">
@@ -57,7 +94,7 @@ export default function SettingsManager() {
         <div className="settings-group">
           <h4><i className="fa-brands fa-whatsapp" style={{ color: '#25D366' }}></i> WhatsApp Order Recipient</h4>
           <p className="settings-desc">
-            Customer bag checkouts and proposal inquiries will be automatically directed to this WhatsApp number. Include country code without '+' (e.g. 918867688699).
+            Customer bag checkouts and proposal inquiries will be automatically directed to this WhatsApp number. Include country code without '+' (e.g. 918867688699). Changes are automatically saved and immediately updated in the Customer Dashboard.
           </p>
           <div className="form-group">
             <label>WhatsApp Number</label>
@@ -65,16 +102,16 @@ export default function SettingsManager() {
               type="text"
               required
               value={formData.whatsapp_number}
-              onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value })}
+              onChange={(e) => handleFieldChange('whatsapp_number', e.target.value)}
             />
           </div>
         </div>
 
         {/* Official Store Contact Email */}
         <div className="settings-group">
-          <h4><i className="fa-solid fa-envelope" style={{ color: 'var(--color-primary)' }}></i> Official Contact & Support Email</h4>
+          <h4><i className="fa-solid fa-envelope" style={{ color: 'var(--color-primary)' }}></i> Official Contact &amp; Support Email</h4>
           <p className="settings-desc">
-            This email address is shown in the footer and across the store. When visitors click the email link, it opens Gmail directly with your address pre-filled as recipient.
+            This email address is shown in the footer and across the storefront. Changes are automatically saved and reflected live on the Customer Dashboard.
           </p>
           <div className="form-group">
             <label>Official Contact Email</label>
@@ -83,7 +120,7 @@ export default function SettingsManager() {
               required
               placeholder="e.g. info@verdantaworld.com"
               value={formData.contact_email || ''}
-              onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+              onChange={(e) => handleFieldChange('contact_email', e.target.value)}
             />
           </div>
         </div>
@@ -98,7 +135,7 @@ export default function SettingsManager() {
                 type="text"
                 required
                 value={formData.admin_username}
-                onChange={(e) => setFormData({ ...formData, admin_username: e.target.value })}
+                onChange={(e) => handleFieldChange('admin_username', e.target.value)}
               />
             </div>
             <div className="form-group">
@@ -107,7 +144,7 @@ export default function SettingsManager() {
                 type="text"
                 required
                 value={formData.admin_password}
-                onChange={(e) => setFormData({ ...formData, admin_password: e.target.value })}
+                onChange={(e) => handleFieldChange('admin_password', e.target.value)}
               />
             </div>
           </div>
@@ -150,14 +187,14 @@ export default function SettingsManager() {
               type="password"
               placeholder="mongodb+srv://user:password@cluster.mongodb.net/..."
               value={formData.mongodb_uri}
-              onChange={(e) => setFormData({ ...formData, mongodb_uri: e.target.value })}
+              onChange={(e) => handleFieldChange('mongodb_uri', e.target.value)}
             />
           </div>
         </div>
 
         <div className="admin-form-actions">
-          <button type="submit" className="btn btn-primary">
-            <i className="fa-solid fa-check"></i> Save Settings
+          <button type="submit" className="btn btn-primary" style={{ background: 'var(--color-gold)', borderColor: 'var(--color-gold)', color: '#fff', fontWeight: 700 }}>
+            <i className="fa-solid fa-check"></i> Save &amp; Publish Settings
           </button>
         </div>
       </form>
