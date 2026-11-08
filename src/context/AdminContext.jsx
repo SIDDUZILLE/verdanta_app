@@ -103,10 +103,10 @@ export function AdminProvider({ children }) {
             setProducts(data);
             try {
               localStorage.setItem('verdanta_products', JSON.stringify(data));
-            } catch (e) { }
+            } catch (e) {}
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
 
     if (corporateCards.length === 0) {
@@ -117,10 +117,10 @@ export function AdminProvider({ children }) {
             setCorporateCards(data);
             try {
               localStorage.setItem('verdanta_corporate_cards', JSON.stringify(data));
-            } catch (e) { }
+            } catch (e) {}
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
 
     if (proposals.length === 0) {
@@ -131,10 +131,10 @@ export function AdminProvider({ children }) {
             setProposals(data);
             try {
               localStorage.setItem('verdanta_proposals', JSON.stringify(data));
-            } catch (e) { }
+            } catch (e) {}
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
   }, [products.length, corporateCards.length, proposals.length]);
 

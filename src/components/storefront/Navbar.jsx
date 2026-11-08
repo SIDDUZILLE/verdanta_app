@@ -23,13 +23,13 @@ export default function Navbar() {
   const corpSubCategories = corpCategory?.subCategories && corpCategory.subCategories.length > 0
     ? corpCategory.subCategories
     : [
-      'Employee Welcome & Onboarding',
-      'Employee Recognition & Milestones',
-      'Festive & Celebration Gifting',
-      'Client, Partner & Executive Gifting',
-      'Sustainable & ESG Gifting',
-      'Curated & Custom Corporate Gift Sets'
-    ];
+        'Employee Welcome & Onboarding',
+        'Employee Recognition & Milestones',
+        'Festive & Celebration Gifting',
+        'Client, Partner & Executive Gifting',
+        'Sustainable & ESG Gifting',
+        'Curated & Custom Corporate Gift Sets'
+      ];
 
   const wholesaleCategories = categories.filter(c => c.channel === 'wholesale' || c.id.startsWith('wholesale'));
   const exportCategories = categories.filter(c => c.channel === 'export' || c.id.startsWith('export'));

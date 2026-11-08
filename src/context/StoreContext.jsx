@@ -189,7 +189,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (e) { }
+    } catch (e) {}
     return [];
   });
 
@@ -200,7 +200,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (e) { }
+    } catch (e) {}
     return DEFAULT_CATEGORIES;
   });
 
@@ -211,7 +211,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === 'object') return { ...DEFAULT_HERO_DATA, ...parsed };
       }
-    } catch (e) { }
+    } catch (e) {}
     return DEFAULT_HERO_DATA;
   });
 
@@ -222,7 +222,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (e) { }
+    } catch (e) {}
     return [];
   });
 
@@ -233,7 +233,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (parsed.contact_email) return parsed.contact_email;
       }
-    } catch (e) { }
+    } catch (e) {}
     return 'info@verdantaworld.com';
   });
 
@@ -244,7 +244,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         if (parsed.whatsapp_number) return String(parsed.whatsapp_number).replace(/\D/g, '');
       }
-    } catch (e) { }
+    } catch (e) {}
     return '918867688699';
   });
 
@@ -302,14 +302,14 @@ export function StoreProvider({ children }) {
   useEffect(() => {
     try {
       localStorage.setItem('verdanta_cart', JSON.stringify(cart));
-    } catch (e) { }
+    } catch (e) {}
   }, [cart]);
 
   // Save Wishlist to LocalStorage
   useEffect(() => {
     try {
       localStorage.setItem('verdanta_wishlist', JSON.stringify(wishlist));
-    } catch (e) { }
+    } catch (e) {}
   }, [wishlist]);
 
   // Initial Load: Only fetch if localStorage is truly empty (never overwrite admin changes)
@@ -325,7 +325,7 @@ export function StoreProvider({ children }) {
             try {
               localStorage.setItem('verdanta_products', JSON.stringify(data));
               localStorage.setItem('verdanta_products_timestamp', String(Date.now()));
-            } catch (e) { }
+            } catch (e) {}
           }
         })
         .catch(() => {
@@ -337,7 +337,7 @@ export function StoreProvider({ children }) {
                 localStorage.setItem('verdanta_products', JSON.stringify(data));
               }
             })
-            .catch(() => { });
+            .catch(() => {});
         });
     }
 
@@ -352,7 +352,7 @@ export function StoreProvider({ children }) {
             localStorage.setItem('verdanta_categories', JSON.stringify(data));
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
 
     // 3. Hero Data
@@ -366,7 +366,7 @@ export function StoreProvider({ children }) {
             localStorage.setItem('verdanta_hero_data', JSON.stringify(data));
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
 
     // 4. Corporate Cards
@@ -380,7 +380,7 @@ export function StoreProvider({ children }) {
             localStorage.setItem('verdanta_corporate_cards', JSON.stringify(data));
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
 
     // 5. Config (WhatsApp Number & Contact Email)
@@ -399,7 +399,7 @@ export function StoreProvider({ children }) {
             localStorage.setItem('verdanta_config', JSON.stringify(cfg));
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
   }, []);
 
@@ -458,7 +458,7 @@ export function StoreProvider({ children }) {
             setProducts(data);
             localStorage.setItem('verdanta_products', JSON.stringify(data));
           }
-        }).catch(() => { });
+        }).catch(() => {});
 
       fetch('/api/categories')
         .then(r => r.ok ? r.json() : null)
@@ -467,7 +467,7 @@ export function StoreProvider({ children }) {
             setCategories(data);
             localStorage.setItem('verdanta_categories', JSON.stringify(data));
           }
-        }).catch(() => { });
+        }).catch(() => {});
 
       fetch('/api/hero')
         .then(r => r.ok ? r.json() : null)
@@ -476,7 +476,7 @@ export function StoreProvider({ children }) {
             setHeroData(prev => ({ ...prev, ...data }));
             localStorage.setItem('verdanta_hero_data', JSON.stringify(data));
           }
-        }).catch(() => { });
+        }).catch(() => {});
 
       fetch('/api/corporate-cards')
         .then(r => r.ok ? r.json() : null)
@@ -485,7 +485,7 @@ export function StoreProvider({ children }) {
             setCorporateCards(data);
             localStorage.setItem('verdanta_corporate_cards', JSON.stringify(data));
           }
-        }).catch(() => { });
+        }).catch(() => {});
 
       fetch('/api/config')
         .then(r => r.ok ? r.json() : null)
@@ -495,7 +495,7 @@ export function StoreProvider({ children }) {
             if (cfg.contact_email) setContactEmail(cfg.contact_email);
             localStorage.setItem('verdanta_config', JSON.stringify(cfg));
           }
-        }).catch(() => { });
+        }).catch(() => {});
     }, 3500);
 
     return () => {

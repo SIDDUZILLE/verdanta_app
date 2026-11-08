@@ -55,37 +55,37 @@ class StoreSyncManager {
         try {
           const prods = JSON.parse(event.newValue || '[]');
           this.handleIncomingEvent({ type: 'PRODUCTS_UPDATED', products: prods, timestamp: Date.now() }, 'storage');
-        } catch (e) { }
+        } catch (e) {}
       } else if (event.key === 'verdanta_categories') {
         try {
           const cats = JSON.parse(event.newValue || '[]');
           this.handleIncomingEvent({ type: 'CATEGORIES_UPDATED', categories: cats, timestamp: Date.now() }, 'storage');
-        } catch (e) { }
+        } catch (e) {}
       } else if (event.key === 'verdanta_hero_data') {
         try {
           const hero = JSON.parse(event.newValue || '{}');
           this.handleIncomingEvent({ type: 'HERO_UPDATED', hero, timestamp: Date.now() }, 'storage');
-        } catch (e) { }
+        } catch (e) {}
       } else if (event.key === 'verdanta_corporate_cards') {
         try {
           const cards = JSON.parse(event.newValue || '[]');
           this.handleIncomingEvent({ type: 'CORPORATE_CARDS_UPDATED', corporateCards: cards, timestamp: Date.now() }, 'storage');
-        } catch (e) { }
+        } catch (e) {}
       } else if (event.key === 'verdanta_config') {
         try {
           const cfg = JSON.parse(event.newValue || '{}');
           this.handleIncomingEvent({ type: 'CONFIG_UPDATED', config: cfg, timestamp: Date.now() }, 'storage');
-        } catch (e) { }
+        } catch (e) {}
       } else if (event.key === 'verdanta_proposals') {
         try {
           const props = JSON.parse(event.newValue || '[]');
           this.handleIncomingEvent({ type: 'PROPOSALS_UPDATED', proposals: props, timestamp: Date.now() }, 'storage');
-        } catch (e) { }
+        } catch (e) {}
       } else if (event.key === 'verdanta_orders') {
         try {
           const ords = JSON.parse(event.newValue || '[]');
           this.handleIncomingEvent({ type: 'ORDERS_UPDATED', orders: ords, timestamp: Date.now() }, 'storage');
-        } catch (e) { }
+        } catch (e) {}
       }
     });
   }
@@ -355,7 +355,7 @@ export async function uploadAndProcessImage(fileOrDataUrl) {
         }
       }
     }
-  } catch (e) { }
+  } catch (e) {}
 
   // 3. Server API upload check
   try {
@@ -370,7 +370,7 @@ export async function uploadAndProcessImage(fileOrDataUrl) {
         return data.url;
       }
     }
-  } catch (e) { }
+  } catch (e) {}
 
   // 4. Return compressed data URL as safe local fallback
   return compressed;

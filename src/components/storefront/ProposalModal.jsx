@@ -55,7 +55,7 @@ export default function ProposalModal() {
       existing.unshift(newProposal);
       syncManager.save('verdanta_proposals', existing, 'PROPOSALS_UPDATED', '/api/proposals', 'proposals');
       syncManager.dispatch('NEW_PROPOSAL', { proposal: newProposal });
-    } catch (err) { }
+    } catch (err) {}
 
     // 4. Open WhatsApp
     const waUrl = buildWhatsAppInquiryUrl(newProposal, whatsappNumber);
