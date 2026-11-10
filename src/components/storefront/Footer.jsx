@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 
 export default function Footer() {
-  const { whatsappNumber, contactEmail = 'info@verdantaworld.com', filterByCategory, openCorporateGifting, showToast } = useStore();
+  const { categories = [], whatsappNumber, contactEmail = 'info@verdantaworld.com', filterByCategory, openCorporateGifting, showToast } = useStore();
   const [emailInput, setEmailInput] = useState('');
 
   const formatPhone = (num) => {
@@ -111,35 +111,28 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Footer Collections List */}
+        {/* Footer Collections List (Dynamic & Synced Live) */}
         <div className="footer-col">
           <h4 className="footer-col-title">COLLECTIONS</h4>
           <ul className="footer-menu">
-            <li>
-              <a href="#categories" onClick={(e) => { filterByCategory('Artisan Gallery'); handleNavScroll('categories', e); }}>
-                Artisan Gallery
-              </a>
-            </li>
-            <li>
-              <a href="#categories" onClick={(e) => { filterByCategory('Wooden Gallery'); handleNavScroll('categories', e); }}>
-                Wooden Gallery
-              </a>
-            </li>
-            <li>
-              <a href="#categories" onClick={(e) => { filterByCategory('Premium Home Decor'); handleNavScroll('categories', e); }}>
-                Premium Home Décor
-              </a>
-            </li>
-            <li>
-              <a href="#corporate" onClick={(e) => { openCorporateGifting('Sustainable & ESG Gifting'); handleNavScroll('corporate', e); }}>
-                ESG Corporate Solutions
-              </a>
-            </li>
-            <li>
-              <a href="#categories" onClick={(e) => { filterByCategory('Personalization Gifting'); handleNavScroll('categories', e); }}>
-                Personalization Gifting
-              </a>
-            </li>
+            {categories.slice(0, 6).map(cat => (
+              <li key={cat.id}>
+                <a
+                  href={cat.channel === 'corporate' ? '#corporate' : '#categories'}
+                  onClick={(e) => {
+                    if (cat.channel === 'corporate') {
+                      openCorporateGifting('all');
+                      handleNavScroll('corporate', e);
+                    } else {
+                      filterByCategory(cat.id);
+                      handleNavScroll('categories', e);
+                    }
+                  }}
+                >
+                  {cat.name}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
 

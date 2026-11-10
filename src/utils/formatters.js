@@ -16,24 +16,50 @@ export function parseNumericPrice(val) {
   return parseFloat(clean) || 0;
 }
 
-export function normalizeCategoryId(catNameOrId) {
+export function normalizeCategoryId(catNameOrId, categoriesList = null) {
   if (!catNameOrId) return 'artisan-gallery';
   const clean = String(catNameOrId).toLowerCase().trim();
 
-  // Specific channel matchers first
-  if (clean === 'corporate-gifting' || clean.includes('corporate gifting') || (clean.includes('corporate') && clean.includes('gifting'))) return 'corporate-gifting';
-  if (clean === 'wholesale-wood' || (clean.includes('wholesale') && clean.includes('wood'))) return 'wholesale-wood';
-  if (clean === 'wholesale-metal' || (clean.includes('wholesale') && clean.includes('metal')) || clean.includes('wholesale')) return 'wholesale-metal';
-  if (clean === 'export-wood' || (clean.includes('export') && clean.includes('wood'))) return 'export-wood';
-  if (clean === 'export-metal' || (clean.includes('export') && clean.includes('metal')) || clean.includes('export')) return 'export-metal';
+  // 1. Check against active categories list (or stored categories) first!
+  let cats = categoriesList;
+  if (!cats && typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('verdanta_categories');
+      if (stored) cats = JSON.parse(stored);
+    } catch (e) {}
+  }
+  if (Array.isArray(cats)) {
+    const matched = cats.find(c =>
+      (c.id && c.id.toLowerCase() === clean) ||
+      (c.name && c.name.toLowerCase() === clean) ||
+      (c.displayName && c.displayName.toLowerCase() === clean)
+    );
+    if (matched) return matched.id;
+  }
 
-  // General shop collection matchers
-  if (clean.includes('artisan') || clean.includes('clay') || clean.includes('terracotta') || clean.includes('cane')) return 'artisan-gallery';
-  if (clean.includes('wood') || clean.includes('clock') || clean.includes('toy')) return 'wooden-gallery';
-  if (clean.includes('decor') || clean.includes('décor') || clean.includes('brass') || clean.includes('urli')) return 'premium-home-decor';
-  if (clean.includes('esg')) return 'corporate-gifting';
-  if (clean.includes('person') || clean.includes('gift') || clean.includes('festive') || clean.includes('return')) return 'personalization-gifting';
+  // 2. Exact matches for standard category IDs
+  if (clean === 'artisan-gallery') return 'artisan-gallery';
+  if (clean === 'wooden-gallery') return 'wooden-gallery';
+  if (clean === 'premium-home-decor') return 'premium-home-decor';
+  if (clean === 'personalization-gifting') return 'personalization-gifting';
+  if (clean === 'corporate-gifting') return 'corporate-gifting';
+  if (clean === 'wholesale-wood') return 'wholesale-wood';
+  if (clean === 'wholesale-metal') return 'wholesale-metal';
+  if (clean === 'export-wood') return 'export-wood';
+  if (clean === 'export-metal') return 'export-metal';
 
+  // 3. Exact matches for standard category display names
+  if (clean === 'artisan gallery') return 'artisan-gallery';
+  if (clean === 'wooden crafts' || clean === 'wooden gallery') return 'wooden-gallery';
+  if (clean === 'premium home décor' || clean === 'premium home decor') return 'premium-home-decor';
+  if (clean === 'return gifting' || clean === 'personalization gifting' || clean === 'personalization & gifting') return 'personalization-gifting';
+  if (clean === 'corporate gifting') return 'corporate-gifting';
+  if (clean === 'wholesale wood crafts' || clean === 'wholesale - wood crafts') return 'wholesale-wood';
+  if (clean === 'wholesale metal crafts' || clean === 'wholesale - metal crafts') return 'wholesale-metal';
+  if (clean === 'export wood crafts' || clean === 'export - wood crafts') return 'export-wood';
+  if (clean === 'export metal crafts' || clean === 'export - metal crafts') return 'export-metal';
+
+  // 4. Safe fallback: slugify cleanly without overriding custom category names
   return clean.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'artisan-gallery';
 }
 
@@ -41,9 +67,10 @@ export function normalizeSubCategory(catId, subItem, categoryObj = null) {
   if (!subItem) return 'Featured Creations';
   const clean = String(subItem).trim();
 
-  // If clean exact matches an existing defined subcategory, keep it pristine
-  if (categoryObj && Array.isArray(categoryObj.subCategories) && categoryObj.subCategories.includes(clean)) {
-    return clean;
+  // If clean matches an existing defined subcategory (case-insensitive), keep it pristine
+  if (categoryObj && Array.isArray(categoryObj.subCategories)) {
+    const matched = categoryObj.subCategories.find(s => s.toLowerCase() === clean.toLowerCase());
+    if (matched) return matched;
   }
 
   const lower = clean.toLowerCase();

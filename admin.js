@@ -3172,6 +3172,11 @@ window.saveSingleCorporateCard = async function (cardId) {
   localStorage.setItem('verdanta_corporate_cards', JSON.stringify(adminCorporateCards));
   localStorage.setItem('verdanta_corp_trigger', String(Date.now()));
   localStorage.setItem('verdanta_sync_trigger', String(Date.now()));
+
+  if (storeBroadcastChannel) {
+    storeBroadcastChannel.postMessage({ type: 'CORPORATE_CARDS_UPDATED', corporateCards: adminCorporateCards, timestamp: Date.now() });
+  }
+
   renderCorporateCardsAdmin();
   showAdminToast(`Card "${card.title}" saved successfully!`);
 };
@@ -3194,6 +3199,11 @@ window.saveAllCorporateCardsFromAdmin = async function () {
   localStorage.setItem('verdanta_corporate_cards', JSON.stringify(adminCorporateCards));
   localStorage.setItem('verdanta_corp_trigger', String(Date.now()));
   localStorage.setItem('verdanta_sync_trigger', String(Date.now()));
+
+  if (storeBroadcastChannel) {
+    storeBroadcastChannel.postMessage({ type: 'CORPORATE_CARDS_UPDATED', corporateCards: adminCorporateCards, timestamp: Date.now() });
+  }
+
   renderCorporateCardsAdmin();
   showAdminToast('All 6 Corporate Gifting cards saved & synchronized with live store!');
 };

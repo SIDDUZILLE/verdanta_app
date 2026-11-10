@@ -18,12 +18,20 @@ export default function ProductGrid() {
 
   // Helper to filter products belonging to a category
   const getCategoryProducts = (cat, prods) => {
-    const normCatId = cat.id;
+    if (!cat) return [];
+    const normCatId = (cat.id || '').toLowerCase().trim();
     const catNameLower = (cat.name || '').toLowerCase().trim();
     return prods.filter(p => {
-      const pCatId = p.categoryId || normalizeCategoryId(p.category);
-      const pCatLower = (p.category || '').toLowerCase().trim();
-      return pCatId === normCatId || pCatLower === catNameLower;
+      const pCatId = (p.categoryId || '').toLowerCase().trim();
+      const pCatName = (p.category || '').toLowerCase().trim();
+      return (
+        pCatId === normCatId ||
+        pCatName === catNameLower ||
+        pCatName === normCatId ||
+        pCatId === catNameLower ||
+        normalizeCategoryId(p.category) === normCatId ||
+        normalizeCategoryId(p.categoryId) === normCatId
+      );
     });
   };
 

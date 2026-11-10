@@ -168,8 +168,18 @@ export default function ProductList({ onOpenAdd, onEditProduct, onOpenAddCategor
         ) : (
           filteredCategories.map(cat => {
             const allCatProducts = products.filter(p => {
-              const pCatId = p.categoryId || normalizeCategoryId(p.category);
-              return pCatId === cat.id;
+              const normCatId = (cat.id || '').toLowerCase().trim();
+              const catNameLower = (cat.name || '').toLowerCase().trim();
+              const pCatId = (p.categoryId || '').toLowerCase().trim();
+              const pCatName = (p.category || '').toLowerCase().trim();
+              return (
+                pCatId === normCatId ||
+                pCatName === catNameLower ||
+                pCatName === normCatId ||
+                pCatId === catNameLower ||
+                normalizeCategoryId(p.category) === normCatId ||
+                normalizeCategoryId(p.categoryId) === normCatId
+              );
             });
 
             // Extract unique subcategories
@@ -306,8 +316,9 @@ export default function ProductList({ onOpenAdd, onEditProduct, onOpenAddCategor
                 <div className="admin-subcategories-vertical" style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
                   {subs.map((subName, sIdx) => {
                     let subProducts = allCatProducts.filter(p => {
-                      const pSub = (p.subItem || p.subCategory || '').toLowerCase();
-                      return pSub === subName.toLowerCase() || (subs.length === 1 && !p.subItem);
+                      const pSub = (p.subItem || p.subCategory || '').trim().toLowerCase();
+                      const targetSub = (subName || '').trim().toLowerCase();
+                      return pSub === targetSub || (subs.length === 1 && !p.subItem);
                     });
 
                     // Search filtering

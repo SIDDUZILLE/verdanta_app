@@ -18,7 +18,7 @@ const PRESET_PHOTOS = [
 ];
 
 export default function ProductModal({ isOpen, onClose, editingProduct, initialCategory, initialSubCategory }) {
-  const { categories, addProduct, updateProduct, uploadImage } = useAdmin();
+  const { categories, addProduct, updateProduct, uploadImage, addSubCategory } = useAdmin();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -162,6 +162,13 @@ export default function ProductModal({ isOpen, onClose, editingProduct, initialC
     }
 
     const finalSub = customSubItem.trim() ? customSubItem.trim() : formData.subItem;
+
+    if (customSubItem.trim() && currentCategoryObj && addSubCategory) {
+      const existingSubs = currentCategoryObj.subCategories || [];
+      if (!existingSubs.some(s => s.toLowerCase() === customSubItem.trim().toLowerCase())) {
+        addSubCategory(currentCategoryObj.id, customSubItem.trim());
+      }
+    }
 
     const payload = {
       ...formData,

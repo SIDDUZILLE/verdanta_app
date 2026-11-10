@@ -180,6 +180,69 @@ export const DEFAULT_HERO_DATA = {
   secondaryBtnLink: "modal:proposal"
 };
 
+export const DEFAULT_CORPORATE_CARDS = [
+  {
+    id: "corp-welcome",
+    order: 1,
+    title: "EMPLOYEE WELCOME & ONBOARDING",
+    description: "Thoughtful gift sets to make new team members feel valued and connected.",
+    icon: "fa-solid fa-leaf",
+    image: "images/corporate/corp-welcome.jpg",
+    defaultImage: "images/corporate/corp-welcome.jpg",
+    categoryKey: "Employee Welcome & Onboarding"
+  },
+  {
+    id: "corp-recognition",
+    order: 2,
+    title: "EMPLOYEE RECOGNITION & MILESTONES",
+    description: "Celebrate achievements with premium gifts that inspire and motivate.",
+    icon: "fa-solid fa-user",
+    image: "images/corporate/corp-recognition.jpg",
+    defaultImage: "images/corporate/corp-recognition.jpg",
+    categoryKey: "Employee Recognition & Milestones"
+  },
+  {
+    id: "corp-festive",
+    order: 3,
+    title: "FESTIVE & CELEBRATION GIFTING",
+    description: "Spread joy with curated gifts for festivals, celebrations and special occasions.",
+    icon: "fa-solid fa-gift",
+    image: "images/corporate/corp-festive.jpg",
+    defaultImage: "images/corporate/corp-festive.jpg",
+    categoryKey: "Festive & Celebration Gifting"
+  },
+  {
+    id: "corp-client",
+    order: 4,
+    title: "CLIENT, PARTNER & EXECUTIVE GIFTING",
+    description: "Build lasting relationships with premium, customized and eco-friendly gift options.",
+    icon: "fa-solid fa-leaf",
+    image: "images/corporate/corp-client.jpg",
+    defaultImage: "images/corporate/corp-client.jpg",
+    categoryKey: "Client, Partner & Executive Gifting"
+  },
+  {
+    id: "corp-esg",
+    order: 5,
+    title: "SUSTAINABLE & ESG GIFTING",
+    description: "Eco-conscious gifts for a greener planet and a better tomorrow.",
+    icon: "fa-solid fa-leaf",
+    image: "images/corporate/corp-esg.jpg",
+    defaultImage: "images/corporate/corp-esg.jpg",
+    categoryKey: "Sustainable & ESG Gifting"
+  },
+  {
+    id: "corp-curated",
+    order: 6,
+    title: "CURATED & CUSTOM CORPORATE GIFT SETS",
+    description: "Tailored gift sets to reflect your brand and unique message.",
+    icon: "fa-regular fa-star",
+    image: "images/corporate/corp-curated.jpg",
+    defaultImage: "images/corporate/corp-curated.jpg",
+    categoryKey: "Curated & Custom Corporate Gift Sets"
+  }
+];
+
 export function StoreProvider({ children }) {
   // 1. Initial State from localStorage (preserves all Admin modifications)
   const [products, setProducts] = useState(() => {
@@ -223,7 +286,7 @@ export function StoreProvider({ children }) {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {}
-    return [];
+    return DEFAULT_CORPORATE_CARDS;
   });
 
   const [contactEmail, setContactEmail] = useState(() => {
@@ -572,11 +635,14 @@ export function StoreProvider({ children }) {
       setActiveSubCategory(null);
       setActiveChannel('all');
     } else {
-      const normId = normalizeCategoryId(categoryId);
+      const normId = normalizeCategoryId(categoryId, categories);
       setActiveCategory(normId);
       setActiveSubCategory(subCat && typeof subCat === 'string' && subCat.trim() ? subCat.trim() : null);
 
-      if (normId.startsWith('wholesale')) {
+      const targetCat = categories.find(c => c.id === normId);
+      if (targetCat?.channel) {
+        setActiveChannel(targetCat.channel);
+      } else if (normId.startsWith('wholesale')) {
         setActiveChannel('wholesale');
       } else if (normId.startsWith('export')) {
         setActiveChannel('export');
@@ -591,7 +657,7 @@ export function StoreProvider({ children }) {
     if (catElem) {
       catElem.scrollIntoView({ behavior: 'smooth' });
     }
-  }, []);
+  }, [categories]);
 
   // Open Corporate Gifting with smooth scroll and card highlight
   const openCorporateGifting = useCallback((targetSubCategory = 'all') => {

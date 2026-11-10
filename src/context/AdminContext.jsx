@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { DEFAULT_CATEGORIES, DEFAULT_HERO_DATA } from './StoreContext';
+import { DEFAULT_CATEGORIES, DEFAULT_HERO_DATA, DEFAULT_CORPORATE_CARDS } from './StoreContext';
 import { syncManager, uploadAndProcessImage } from '../utils/syncManager';
 
 const AdminContext = createContext(null);
@@ -57,9 +57,9 @@ export function AdminProvider({ children }) {
   const [corporateCards, setCorporateCards] = useState(() => {
     try {
       const stored = localStorage.getItem('verdanta_corporate_cards');
-      return stored ? JSON.parse(stored) : [];
+      return stored ? JSON.parse(stored) : DEFAULT_CORPORATE_CARDS;
     } catch (e) {
-      return [];
+      return DEFAULT_CORPORATE_CARDS;
     }
   });
 
@@ -262,9 +262,10 @@ export function AdminProvider({ children }) {
 
   // Category CRUD
   const addCategory = (newCat) => {
+    const slug = (newCat.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const cat = {
       ...newCat,
-      id: newCat.id || newCat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      id: newCat.id || slug || 'cat-' + Date.now(),
       subCategories: newCat.subCategories || []
     };
     const nextCats = [...categories, cat];
@@ -274,9 +275,23 @@ export function AdminProvider({ children }) {
   };
 
   const updateCategory = (updatedCat) => {
+    const oldCat = categories.find(c => c.id === updatedCat.id);
     const nextCats = categories.map(c => c.id === updatedCat.id ? { ...c, ...updatedCat } : c);
     setCategories(nextCats);
     syncManager.save('verdanta_categories', nextCats, 'CATEGORIES_UPDATED', '/api/categories', 'categories');
+
+    // Cascade category name changes to products under this category
+    if (oldCat && oldCat.name !== updatedCat.name) {
+      const nextProds = products.map(p => {
+        if (p.categoryId === updatedCat.id || p.category === oldCat.name) {
+          return { ...p, category: updatedCat.name, categoryId: updatedCat.id };
+        }
+        return p;
+      });
+      setProducts(nextProds);
+      syncManager.save('verdanta_products', nextProds, 'PRODUCTS_UPDATED', '/api/products', 'products');
+    }
+
     showAdminToast(`Category "${updatedCat.name}" updated and synced live!`);
   };
 

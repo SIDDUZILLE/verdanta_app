@@ -15,7 +15,7 @@ export default function CategoryPills() {
     filterByChannel
   } = useStore();
 
-  const shopCategories = categories.filter(c => c.channel === 'shop');
+  const shopCategories = categories.filter(c => c.channel === 'shop' || (!c.channel && !c.id.includes('wholesale') && !c.id.includes('export') && c.id !== 'corporate-gifting'));
   const currentCatObj = categories.find(c => c.id === activeCategory);
 
   const resolveImage = (img) => {
